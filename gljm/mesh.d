@@ -27,3 +27,11 @@ struct Mesh { // well it's just a container
     
 }
 
+Mesh load_mesh(JSONObject jobj) {
+}
+
+Mesh load_mesh(string jstring) {
+}
+
+Mesh load_mesh_from_file(string path) {
+}
