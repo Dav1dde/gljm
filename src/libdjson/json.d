@@ -692,7 +692,7 @@ private dchar toHVal(char digit) {
 	}
 	return 0;
 }
-
+/*
 unittest {
 	auto root = new JSONObject();
 	auto arr = new JSONArray();
@@ -734,7 +734,7 @@ unittest {
 	try {
 		tmp[5];
 		assert(false,"An exception should have been thrown on the line above.");
-	} catch (Exception e) {/*shazam! program flow should get here, it is a correct thing*/}
+	} catch (Exception e) {/+shazam! program flow should get here, it is a correct thing+/}
 	writef("Testing alternate base container and empty elements...\n");
 	assert("[,,]".readJSON().toString == "[null,null,null]");
 	jstr = 
@@ -755,7 +755,7 @@ unittest {
 	writef("Testing opIn_r functionality...\n");
 	assert("realms" in tmp);
 	assert(!("bob" in tmp));
-}
+}*/
 
 version(JSON_main) {
 	void main(){}
