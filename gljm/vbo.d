@@ -43,7 +43,7 @@ struct Buffer(type, GLenum gltype) {
         void bind(GLuint attrib_location, GLint size) {
             glBindBuffer(gltype, buffer);
             glEnableVertexAttribArray(attrib_location);
-            glVertexAttribPointer(attrib_location, size, glbt, false, 0, 0);
+            glVertexAttribPointer(attrib_location, size, glbt, false, 0, null);
         }
     }
     
