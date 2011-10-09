@@ -2,6 +2,7 @@ module gljm.util;
 
 private {
     import derelict.opengl.gl;
+    import std.conv : to;
 }
 
 template type2glenum(T) {
@@ -66,4 +67,14 @@ unittest {
     assert(is(uint : glenum2type!GL_UNSIGNED_INT));
     assert(is(float : glenum2type!GL_FLOAT));
     assert(is(double : glenum2type!GL_DOUBLE));
+}
+
+T[] conv_array(T, U)(U[] arr) {
+    T[] arr2;
+    
+    foreach(U ele; arr) {
+        arr2 ~= to!(T)(ele);
+    }
+    
+    return arr2;
 }
