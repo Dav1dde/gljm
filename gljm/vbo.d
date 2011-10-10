@@ -1,69 +1,96 @@
 module gljm.vbo;
 
 private {
-    import gljm.util : type2glenum;
     import derelict.opengl.gl;
 }
 
+struct BufferData {
+    void[] data;
+    GLenum type;
+    GLint size;
+    GLenum hint;
+    
+    this(void[] data_, GLenum type_, GLint size_, GLenum hint_ = GL_STATIC_DRAW) {
+        data = data_;
+        type = type_;
+        size = size_;
+        hint = hint_;
+    }
+}
 
-struct Buffer(type, GLenum gltype) {
-    alias type bt;
-    alias type2glenum!type glbt;
-    
-    
-    bt[] _data;
+struct ElementBuffer {
+    private BufferData _buffer_data;
     GLuint buffer;
     
-    
     @disable this();
+    static ElementBuffer opCall() { return ElementBuffer(0); }
+    private this(ubyte x) { glGenBuffers(1, &buffer); }
+
+    void bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); }
+    void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
     
-    static Buffer opCall() {
-        return Buffer(0);
-    }
-    
-    package this(ubyte x) { // dirty, but it works
-        glGenBuffers(1, &buffer);
-    }
-    
-    this(bt[] data_) {
-        glGenBuffers(1, &buffer);
-        set_data(data_);
+    void set_data(void[] data, GLenum hint = GL_STATIC_DRAW) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); // or bind()
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.length, data.ptr, hint);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //or unbind()
+        
+        _buffer_data.data = data;
+        _buffer_data.hint = hint;
     }
 
-    this(bt[] data_, GLenum hint) {
-        glGenBuffers(1, &buffer);
-        set_data(data_, hint);
+    @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
+    @property BufferData buffer_data() { return _buffer_data; };
+}
+
+
+struct Buffer {
+    private BufferData _buffer_data;
+    GLuint buffer;
+    
+    @disable this();
+    static Buffer opCall() { return Buffer(0); }
+    private this(ubyte x) { glGenBuffers(1, &buffer); }
+    
+    void bind() { glBindBuffer(GL_ARRAY_BUFFER, buffer); }
+    void bind(GLuint attrib_location) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glEnableVertexAttribArray(attrib_location);
+        glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, false, 0, null);
     }
-        
-    void bind() {
-        glBindBuffer(gltype, buffer);
+    void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+    
+    void set_data(void[] data, GLenum type, GLint size, GLenum hint) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()
+        glBufferData(GL_ARRAY_BUFFER, data.length, data.ptr, hint);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
+    
+        _buffer_data.data = data;
+        _buffer_data.type = type;
+        _buffer_data.size = size;
+        _buffer_data.hint = hint;
     }
     
-    static if (gltype == GL_ARRAY_BUFFER) {
-        void bind(GLuint attrib_location, GLint size) {
-            glBindBuffer(gltype, buffer);
-            glEnableVertexAttribArray(attrib_location);
-            glVertexAttribPointer(attrib_location, size, glbt, false, 0, null);
-        }
+    @property void buffer_data(BufferData bd) {
+        set_data(bd.data, bd.type, bd.size, bd.hint);
     }
+    @property BufferData buffer_data() {
+        return _buffer_data;
+    };
+}
+
+
+GLuint gen_gl_buffer() {
+    GLuint buffer;
     
-    void unbind() {
-        glBindBuffer(gltype, 0);
-    }
+    glGenBuffers(1, &buffer);
     
-    void set_data(bt[] data_, GLenum hint = GL_STATIC_DRAW) {
-        glBindBuffer(gltype, buffer); // or bind()
-        glBufferData(gltype, (bt.sizeof * data_.length), data_.ptr, hint);
-        _data = data_;
-        glBindBuffer(gltype, 0); //or unbind()
-    }
+    return buffer;
+}
+
+GLuint[] gen_gl_buffers(int n = 1)() {
+    GLuint[n] buffers;
     
-    @property void data(bt[] data) {
-        set_data(data);
-    }
+    glGenBuffers(n, &buffers);
     
-    @property bt[] data() {
-        return _data;
-    }
-    
+    return buffers;
 }
