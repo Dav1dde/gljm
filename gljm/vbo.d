@@ -59,7 +59,7 @@ struct Buffer {
     }
     void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
     
-    void set_data(void[] data, GLenum type, GLint size, GLenum hint) {
+    void set_data(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()
         glBufferData(GL_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
