@@ -91,7 +91,7 @@ Mesh load_mesh(JSONObject jobj) {
             }
         } else if(arr.length == 2) {
             string name = arr[0];
-            GLint size = to!(GLint)(arr[1][0]);
+            GLint size = to!(GLint)(arr[1][0..1]); // for correct conversion, we need a string => slice
             char ctype = arr[1][1];
             
             real[] data;

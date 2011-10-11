@@ -31,13 +31,13 @@ struct ElementBuffer {
     void bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); }
     void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
     
-    void set_data(void[] data, GLenum hint = GL_STATIC_DRAW) {
+    void set_data(void[] data_, GLenum hint_ = GL_STATIC_DRAW) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); // or bind()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //or unbind()
         
-        _buffer_data.data = data;
-        _buffer_data.hint = hint;
+        _buffer_data.data = data_;
+        _buffer_data.hint = hint_;
     }
 
     @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
@@ -58,19 +58,19 @@ struct Buffer {
     void bind(GLuint attrib_location) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glEnableVertexAttribArray(attrib_location);
-        glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, false, 0, null);
+        glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, GL_FALSE, 0, null);
     }
     void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
     
-    void set_data(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
+    void set_data(void[] data_, GLenum type_, GLint size_, GLenum hint_ = GL_STATIC_DRAW) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()
         glBufferData(GL_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
     
-        _buffer_data.data = data;
-        _buffer_data.type = type;
-        _buffer_data.size = size;
-        _buffer_data.hint = hint;
+        _buffer_data.data = data_;
+        _buffer_data.type = type_;
+        _buffer_data.size = size_;
+        _buffer_data.hint = hint_;
     }
     
     @property void buffer_data(BufferData bd) {
