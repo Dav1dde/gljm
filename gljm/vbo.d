@@ -16,10 +16,6 @@ struct BufferData {
         size = size_;
         hint = hint_;
     }
-    
-    bool opCast(T : bool)() {
-        return cast(bool)(data.length);
-    }
 }
 
 struct ElementBuffer {
@@ -45,6 +41,8 @@ struct ElementBuffer {
 
     @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
     @property BufferData buffer_data() { return _buffer_data; };
+
+    bool opCast(T : bool)() { return cast(bool)(_buffer_data.data.length); }
 }
 
 
@@ -77,12 +75,10 @@ struct Buffer {
         _buffer_data.hint = hint;
     }
     
-    @property void buffer_data(BufferData bd) {
-        set_data(bd.data, bd.type, bd.size, bd.hint);
-    }
-    @property BufferData buffer_data() {
-        return _buffer_data;
-    }
+    @property void buffer_data(BufferData bd) { set_data(bd.data, bd.type, bd.size, bd.hint); }
+    @property BufferData buffer_data() { return _buffer_data; }
+    
+    bool opCast(T : bool)() { return cast(bool)(_buffer_data.data.length); }
 }
 
 
