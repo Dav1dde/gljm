@@ -31,9 +31,18 @@ struct Mesh {
 
         void bind(GLuint[string] attrib_locations) {
             foreach(string key, Buffer value; _members) {
-                value.bind(attrib_locations[key]);
+                if(key in attrib_locations) {
+                    value.bind(attrib_locations[key]);
+                }
             }
         }
+        
+        void unbind() {
+            foreach(string key, Buffer value; _members) {
+                value.unbind();
+            }
+        }
+        
     }
     
     ElementBuffer indices;
@@ -50,9 +59,11 @@ struct Mesh {
             indices.bind();
             
             glDrawElements(mode, (count_<0?indices.length:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
+            indices.unbind();
         } else {
             glDrawArrays(mode, offset, (count_<0?buffer.count:count_));
         }
+        buffer.unbind();
     }
 }
 
