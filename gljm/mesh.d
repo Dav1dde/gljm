@@ -8,7 +8,7 @@ private {
     import derelict.opengl.gl : GLint, GLsizei, GLuint, GLenum,
                                 glDrawElements, glDrawArrays,
                                 GL_TRIANGLES, GL_FLOAT, GL_UNSIGNED_SHORT, GL_INT;
-    import gljm.util : conv_array;
+    import gljm.util : conv_array, glenum2size;
     import gljm.vbo : Buffer, ElementBuffer, BufferData;
 }
 
@@ -25,7 +25,7 @@ struct Mesh {
             _members[s] = b;
             
             if(!count) {
-                count = b.data.length / b.size;
+                count = (b.data.length / glenum2size(b.type)) / b.size;
             }
         }
 
@@ -49,7 +49,7 @@ struct Mesh {
     BufferS buffer;
     
     @property int count() {
-        if(indices) { return indices.data.length; }
+        if(indices) { return indices.data.length / glenum2size(indices.type); }
         else { return buffer.count; }
     }
     

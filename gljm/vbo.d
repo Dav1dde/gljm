@@ -59,7 +59,6 @@ struct Buffer {
     void bind(GLuint attrib_location) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glEnableVertexAttribArray(attrib_location);
-        import std.stdio; writefln("%s, %s, %s", attrib_location, _buffer_data.size, _buffer_data.type);
         glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, GL_FALSE, 0, null);
     }
     void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }

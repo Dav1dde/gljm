@@ -69,6 +69,42 @@ unittest {
     assert(is(double : glenum2type!GL_DOUBLE));
 }
 
+template glenum2sizect(GLenum t) {
+    static if(t == GL_BYTE) {
+        enum glenum2sizect = byte.sizeof;
+    } else static if(t == GL_UNSIGNED_BYTE) {
+        enum glenum2sizect = ubyte.sizeof;
+    } else static if(t == GL_SHORT) {
+        enum glenum2sizect = short.sizeof;
+    } else static if(t == GL_UNSIGNED_SHORT) {
+        enum glenum2sizect = ushort.sizeof;
+    } else static if(t == GL_INT) {
+        enum glenum2sizect = int.sizeof;
+    } else static if(t == GL_UNSIGNED_INT) {
+        enum glenum2sizect = uint.sizeof;
+    } else static if(t == GL_FLOAT) {
+        enum glenum2sizect = float.sizeof;
+    } else static if(t == GL_DOUBLE) {
+        enum glenum2sizect = double.sizeof;
+    } else {
+        static assert(false, T.stringof ~ " cannot be represented as D-Type");
+    }
+}
+
+int glenum2size(GLenum t) {
+    switch(t) {
+        case GL_BYTE: return glenum2sizect!GL_BYTE;
+        case GL_UNSIGNED_BYTE: return glenum2sizect!GL_UNSIGNED_BYTE;
+        case GL_SHORT: return glenum2sizect!GL_SHORT;
+        case GL_UNSIGNED_SHORT: return glenum2sizect!GL_UNSIGNED_SHORT;
+        case GL_INT: return glenum2sizect!GL_INT;
+        case GL_UNSIGNED_INT: return glenum2sizect!GL_UNSIGNED_INT;
+        case GL_FLOAT: return glenum2sizect!GL_FLOAT;
+        case GL_DOUBLE: return glenum2sizect!GL_DOUBLE;
+        default: throw new Exception("Unknown GLenum");
+    }
+}
+
 T[] conv_array(T, U)(U[] arr) {
     T[] arr2;
     
