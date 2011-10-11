@@ -25,16 +25,10 @@ struct Mesh {
             _members[s] = b;
             
             if(!count) {
-                count = b.buffer_data.data.length / b.buffer_data.size;
+                count = b.length / b.size;
             }
         }
-        
-//         void bind() { // you dont want this!
-//             foreach(string key, Buffer value) {
-//                 value.bind(); 
-//             }
-//         }
-        
+
         void bind(GLuint[string] attrib_locations) {
             foreach(string key, Buffer value; _members) {
                 value.bind(attrib_locations[key]);
@@ -46,7 +40,7 @@ struct Mesh {
     BufferS buffer;
     
     @property int count() {
-        if(indices) { return indices.buffer_data.data.length; }
+        if(indices) { return indices.length; }
         else { return buffer.count; }
     }
     
@@ -55,7 +49,7 @@ struct Mesh {
         if(indices) {
             indices.bind();
             
-            glDrawElements(mode, (count_<0?indices.buffer_data.data.length:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
+            glDrawElements(mode, (count_<0?indices.length:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
         } else {
             glDrawArrays(mode, offset, (count_<0?buffer.count:count_));
         }

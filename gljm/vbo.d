@@ -6,6 +6,7 @@ private {
 
 struct BufferData {
     void[] data;
+    alias data this;
     GLenum type;
     GLint size;
     GLenum hint;
@@ -19,7 +20,8 @@ struct BufferData {
 }
 
 struct ElementBuffer {
-    private BufferData _buffer_data;
+    BufferData _buffer_data;
+    alias _buffer_data this;
     GLuint buffer;
     
     //@disable this();
@@ -40,19 +42,12 @@ struct ElementBuffer {
 
     @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
     @property BufferData buffer_data() { return _buffer_data; };
-    
-    bool opCast(T : bool)() {
-        if(_buffer_data.data) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }
 
 
 struct Buffer {
-    private BufferData _buffer_data;
+    BufferData _buffer_data;
+    alias _buffer_data this;
     GLuint buffer;
     
     //@disable this();
@@ -83,14 +78,6 @@ struct Buffer {
     }
     @property BufferData buffer_data() {
         return _buffer_data;
-    }
-    
-    bool opCast(T : bool)() {
-        if(_buffer_data.data) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 
