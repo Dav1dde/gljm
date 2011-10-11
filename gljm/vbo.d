@@ -62,6 +62,10 @@ struct Buffer {
         glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, GL_FALSE, 0, null);
     }
     void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+    void unbind(GLuint attrib_location) {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDisableVertexAttribArray(attrib_location);
+    }
     
     void set_data(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()

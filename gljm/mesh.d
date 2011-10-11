@@ -42,6 +42,13 @@ struct Mesh {
                 value.unbind();
             }
         }
+        void unbind(GLuint[string] attrib_locations) {
+            foreach(string key, Buffer value; _members) {
+                if(key in attrib_locations) {
+                    value.unbind(attrib_locations[key]);
+                }
+            }
+        }
         
     }
     
@@ -63,7 +70,7 @@ struct Mesh {
         } else {
             glDrawArrays(mode, offset, (count_<0?buffer.count:count_));
         }
-        buffer.unbind();
+        buffer.unbind(attrib_locations);
     }
 }
 
