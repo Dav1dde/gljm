@@ -14,28 +14,6 @@ private {
 
 
 struct Mesh {
-    struct ElementBufferS {
-        private ElementBuffer[string] _members;
-        private int count = 0;
-        alias _members this;
-    
-        ElementBuffer opDispatch(string s)() { return get(s); }
-        ElementBuffer get(string s) { return _members[s]; }
-        package void set(string s, ElementBuffer b) {
-            _members[s] = b;
-            
-            if(!count) {
-                count = b.buffer_data.data.length;
-            }
-        }
-        
-        void bind() { // kinda strange, more then one ELEMENT_ARRAY_BUFFER?
-            foreach(string key, ElementBuffer value; _members) {
-                value.bind();
-            }
-        }
-    }
-    
     struct BufferS {
         private Buffer[string] _members;
         private int count = 0;
@@ -64,20 +42,20 @@ struct Mesh {
         }
     }
     
-    ElementBufferS element_buffer;
+    ElementBuffer indices;
     BufferS buffer;
     
     @property int count() {
-        if(element_buffer) { return element_buffer.count; }
+        if(indices) { return indices.buffer_data.data.length; }
         else { return buffer.count; }
     }
     
     void draw(GLuint[string] attrib_locations, GLenum mode = GL_TRIANGLES, GLint offset = 0, GLsizei count_ = -1) {
         buffer.bind(attrib_locations);
-        if(element_buffer) {
-            element_buffer.bind();
+        if(indices) {
+            indices.bind();
             
-            glDrawElements(mode, (count_<0?element_buffer.count:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
+            glDrawElements(mode, (count_<0?indices.buffer_data.data.length:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
         } else {
             glDrawArrays(mode, offset, (count_<0?buffer.count:count_));
         }
@@ -91,17 +69,21 @@ Mesh load_mesh(JSONObject jobj) {
         auto arr = split(key, "_");
 
         if(arr.length == 1) {
-            string name = key;
+            if(!m.indices) {
+                string name = key;
+                
+                ushort[] data;
+                foreach(JSONType num; value) {
+                    data ~= to!(ushort)(num.toJSONNumber.getLong());
+                }
+                
+                ElementBuffer buffer = ElementBuffer();
+                buffer.set_data(data);
             
-            ushort[] data;
-            foreach(JSONType num; value) {
-                data ~= to!(ushort)(num.toJSONNumber.getLong());
+                m.indices = buffer;
+            } else {
+                throw new Exception("Just one indices buffer allowed per mesh");
             }
-            
-            ElementBuffer buffer = ElementBuffer();
-            buffer.set_data(data);
-            
-            m.element_buffer.set(name, buffer);
         } else if(arr.length == 2) {
             string name = arr[0];
             GLint size = to!(GLint)(arr[1][0]);

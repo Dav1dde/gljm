@@ -22,7 +22,7 @@ struct ElementBuffer {
     private BufferData _buffer_data;
     GLuint buffer;
     
-    @disable this();
+    //@disable this();
     static ElementBuffer opCall() { return ElementBuffer(0); }
     private this(ubyte x) { glGenBuffers(1, &buffer); }
 
@@ -40,6 +40,14 @@ struct ElementBuffer {
 
     @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
     @property BufferData buffer_data() { return _buffer_data; };
+    
+    bool opCast(T : bool)() {
+        if(_buffer_data.data) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 
@@ -47,7 +55,7 @@ struct Buffer {
     private BufferData _buffer_data;
     GLuint buffer;
     
-    @disable this();
+    //@disable this();
     static Buffer opCall() { return Buffer(0); }
     private this(ubyte x) { glGenBuffers(1, &buffer); }
     
@@ -75,7 +83,15 @@ struct Buffer {
     }
     @property BufferData buffer_data() {
         return _buffer_data;
-    };
+    }
+    
+    bool opCast(T : bool)() {
+        if(_buffer_data.data) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 
