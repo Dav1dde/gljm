@@ -30,13 +30,14 @@ struct ElementBuffer {
     void bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); }
     void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
     
-    void set_data(void[] data, GLenum hint = GL_STATIC_DRAW) {
+    void set_data(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); // or bind()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //or unbind()
         
         _buffer_data.data = data;
         _buffer_data.hint = hint;
+        _buffer_data.type = type;
     }
 
     @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }

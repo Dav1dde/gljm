@@ -62,13 +62,15 @@ struct Mesh {
     
     void draw(GLuint[string] attrib_locations, GLenum mode = GL_TRIANGLES, GLint offset = 0, GLsizei count_ = -1) {
         buffer.bind(attrib_locations);
+        
+        int c = count_ < 0 ? count:count_;
         if(indices) {
             indices.bind();
-            
-            glDrawElements(mode, (count_<0?indices.data.length:count_), GL_UNSIGNED_SHORT, cast(void *)(offset));
+
+            glDrawElements(mode, c, GL_UNSIGNED_SHORT, cast(void *)(offset));
             indices.unbind();
         } else {
-            glDrawArrays(mode, offset, (count_<0?buffer.count:count_));
+            glDrawArrays(mode, offset, c);
         }
         buffer.unbind(attrib_locations);
     }
@@ -90,7 +92,7 @@ Mesh load_mesh(JSONObject jobj) {
                 }
                 
                 ElementBuffer buffer = ElementBuffer();
-                buffer.set_data(data);
+                buffer.set_data(data, GL_UNSIGNED_SHORT);
             
                 m.indices = buffer;
             } else {
