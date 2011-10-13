@@ -88,7 +88,7 @@ Mesh load_mesh(JSONObject jobj) {
                 
                 ushort[] data;
                 foreach(JSONType num; value) {
-                    data ~= to!(ushort)(num.toJSONNumber.getLong());
+                    data ~= to!(ushort)(num.toJSONNumber.get());
                 }
                 
                 ElementBuffer buffer = ElementBuffer();
@@ -96,9 +96,9 @@ Mesh load_mesh(JSONObject jobj) {
             
                 m.indices = buffer;
             } else {
-                throw new Exception("Just one indices buffer allowed per mesh");
+                throw new Exception("only one index buffer is allowed per mesh.");
             }
-        } else if(arr.length == 2) {
+        } else if((arr.length == 2) && (arr[1].length == 2)) {
             string name = arr[0];
             GLint size = to!(GLint)(arr[1][0..1]); // for correct conversion, we need a string => slice
             char ctype = arr[1][1];
@@ -113,8 +113,8 @@ Mesh load_mesh(JSONObject jobj) {
                 case 'f': buffer_data = BufferData(conv_array!(float)(data), GL_FLOAT, size); break;
                 case 's': buffer_data = BufferData(conv_array!(ushort)(data), GL_UNSIGNED_SHORT, size); break;
                 case 'i': buffer_data = BufferData(conv_array!(int)(data), GL_INT, size); break;
-                default: throw new Exception("key \"" ~ key ~ "\" has unknown type \"" ~ ctype ~ "\","
-                                             "just f, s and i supported");
+                default: throw new Exception("key \"" ~ key ~ "\" has unknown type \"" ~ ctype ~ "\", "
+                                             "only f, s and i are supported.");
             }
             
             Buffer buffer = Buffer();
@@ -122,7 +122,7 @@ Mesh load_mesh(JSONObject jobj) {
                         
             m.buffer.set(name, buffer);
         } else {
-            throw new Exception("malformed key: " ~ key);
+            throw new Exception("malformed key: \"" ~ key ~ "\".");
         }
     }
     
