@@ -106,10 +106,45 @@ def parse(data):
     
     return elements
     
+
+def quad2triangle(tri):
+    return ([tri[0], tri[1], tri[2]], [tri[0], tri[2], tri[3]])
+
+def mq2t(l):
+    out = list()
+    for data in l:
+        if len(data) == 4:
+            out.extend(quad2triangle(data))
+        else:
+            out.append(data)
+    return out
+
+def main():
+    import sys, os.path, json, itertools
+    
+    if len(sys.argv) >= 2:
+        path = sys.argv[1]
+        
+        if os.path.isfile(path):
+            with open(path) as f:
+                parsed = parse(f.read())
+            
+            j = dict()
+            
+            for l in parsed:
+                if l['name'] == 'face':
+                    l['data'] = mq2t(l['data'])
+                else:
+                    l['data'] = [d[:3] for d in l['data']]
+                data = list(itertools.chain.from_iterable(l['data']))
+                
+                if l['type'] == 'list':
+                    j[l['name']] = data
+                else:
+                    j[l['name'] + '_3' + l['property'][0]['type'][0]] = data
+            
+            print json.dumps(j)
+    
     
 if __name__ == '__main__':
-    from pprint import pprint
-    
-    path = raw_input('Path: ').strip()
-    with open(path) as f:
-        pprint(parse(f.read()))
+    main()
