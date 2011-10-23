@@ -2,7 +2,7 @@ module gljm.mesh;
 
 private {
     import std.file : readText;
-    import libdjson.json : JSONType, JSONObject, readJSON;
+    import libdjson.json : JSONType, JSONObject, JSONNull, readJSON;
     import std.array : split;
     import std.conv : to;
     import derelict.opengl.gl : GLint, GLsizei, GLuint, GLenum,
@@ -81,16 +81,20 @@ Mesh load_mesh(JSONObject jobj) {
     
     foreach(string key, JSONType value; jobj) {
         auto arr = split(key, "_");
-
+        
         if(arr.length == 1) {
             if(!m.indices) {
                 string name = key;
                 
                 ushort[] data;
                 foreach(JSONType num; value) {
-                    data ~= to!(ushort)(num.toJSONNumber.get());
+                    if(num.toJSONNumber !is null) {
+                        data ~= to!(ushort)(num.toJSONNumber.get());
+                    } else {
+                        throw new Exception("unable to parse json, error occurred when processing key \"" ~ key ~ "\", "
+                                            "can not convert \"" ~ num.toString ~ "\" to ushort.");
+                    }
                 }
-                
                 ElementBuffer buffer = ElementBuffer();
                 buffer.set_data(data, GL_UNSIGNED_SHORT);
             
@@ -105,7 +109,12 @@ Mesh load_mesh(JSONObject jobj) {
             
             real[] data;
             foreach(JSONType num; value) {
-                data ~= num.toJSONNumber.get();
+                if(num.toJSONNumber !is null) {
+                    data ~= num.toJSONNumber.get();
+                } else {
+                    throw new Exception("unable to parse json, error occurred when processing key \"" ~ key ~ "\", "
+                                        "can not convert \"" ~ num.toString ~ "\" to real.");
+                }
             }
             
             BufferData buffer_data;
