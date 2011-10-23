@@ -10,6 +10,10 @@ private {
                                 GL_TRIANGLES, GL_FLOAT, GL_UNSIGNED_SHORT, GL_INT;
     import gljm.util : conv_array, glenum2size;
     import gljm.vbo : Buffer, ElementBuffer, BufferData;
+    
+    debug {
+        import std.stdio : writefln;
+    }
 }
 
 
@@ -34,6 +38,12 @@ struct Mesh {
                 if(key in attrib_locations) {
                     value.bind(attrib_locations[key]);
                 }
+                
+                debug {
+                    if(key !in attrib_locations) {
+                        writefln("bind buffer: no matching buffer for key \"" ~ key ~ "\"."); 
+                    }
+                }
             }
         }
         
@@ -46,6 +56,12 @@ struct Mesh {
             foreach(string key, Buffer value; _members) {
                 if(key in attrib_locations) {
                     value.unbind(attrib_locations[key]);
+                }
+                
+                debug {
+                    if(key !in attrib_locations) {
+                        writefln("unbind buffer: no matching buffer for key \"" ~ key ~ "\"."); 
+                    }
                 }
             }
         }
