@@ -2,7 +2,7 @@ module gljm.mesh;
 
 private {
     import std.file : readText;
-    import libdjson.json : JSONType, JSONObject, JSONNull, readJSON;
+    import libdjson.json : JSONType, JSONObject, readJSON;
     import std.array : split;
     import std.conv : to;
     import derelict.opengl.gl : GLint, GLsizei, GLuint, GLenum,

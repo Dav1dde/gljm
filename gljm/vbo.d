@@ -1,7 +1,10 @@
 module gljm.vbo;
 
 private {
-    import derelict.opengl.gl;
+    import derelict.opengl.gl : GLenum, GLint, GLuint, GL_FALSE, glDisableVertexAttribArray,
+                                glEnableVertexAttribArray, glVertexAttribPointer, 
+                                GL_STATIC_DRAW, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER,
+                                glBindBuffer, glBufferData, glGenBuffers;
 }
 
 struct BufferData {

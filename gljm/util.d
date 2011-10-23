@@ -1,7 +1,8 @@
 module gljm.util;
 
 private {
-    import derelict.opengl.gl;
+    import derelict.opengl.gl : GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT,
+                                GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_DOUBLE, GLenum;
     import std.conv : to;
 }
 
