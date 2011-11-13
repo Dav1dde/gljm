@@ -4,7 +4,7 @@ private {
     import gljm.mesh : Mesh;
     import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
-    import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
+    import derelict.opengl.gl : GL_UNSIGNED_SHORT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip;
     import std.array : split, array;
@@ -18,9 +18,9 @@ private {
 
 
 struct Face {
-    uint v_index;
-    uint vt_index;
-    uint vn_index;
+    ushort v_index;
+    ushort vt_index;
+    ushort vn_index;
 }
 
 struct Obj {
@@ -99,13 +99,13 @@ Obj[] parse_obj(string data) {
                     string[] s = split(arg, "/");
                     
                     switch(s.length) {
-                        case 1: f.v_index = to!(uint)(s[0]); break;
-                        case 2: f.v_index = to!(uint)(s[0]);
-                                f.vt_index = to!(uint)(s[1]); break;
+                        case 1: f.v_index = to!(ushort)(s[0]); break;
+                        case 2: f.v_index = to!(ushort)(s[0]);
+                                f.vt_index = to!(ushort)(s[1]); break;
                         case 3:
-                                f.v_index = to!(uint)(s[0]);
-                                if(s[1]) { f.vt_index = to!(uint)(s[1]); }
-                                f.vn_index = to!(uint)(s[2]);
+                                f.v_index = to!(ushort)(s[0]);
+                                if(s[1]) { f.vt_index = to!(ushort)(s[1]); }
+                                f.vn_index = to!(ushort)(s[2]);
                     default: throw new Exception("");
                     }
                 
@@ -134,7 +134,7 @@ Mesh[] parse_obj_mesh(string data) {
     foreach(Obj obj; objs) {
         Mesh m;
         
-        m.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_INT);
+        m.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
         
         m.buffer.set("v", Buffer(obj.v[], GL_FLOAT, obj.v[0].length));
         if(obj.vt) m.buffer.set("vt", Buffer(obj.vt[], GL_FLOAT, obj.vt[0].length));
