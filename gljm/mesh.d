@@ -25,7 +25,7 @@ struct Mesh {
     
         Buffer opDispatch(string s)() { return get(s); }
         Buffer get(string s) { return _members[s]; }
-        package void set(string s, Buffer b) {
+        /*package*/ void set(string s, Buffer b) {
             _members[s] = b;
             
             if(!count) {

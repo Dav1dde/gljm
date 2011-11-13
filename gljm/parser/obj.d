@@ -2,10 +2,12 @@ module gljm.parser.obj;
 
 private {
     import gljm.mesh : Mesh;
+    import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
+    import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip;
-    import std.array : split;
+    import std.array : split, array;
     import std.algorithm : map;
     import std.conv : to;
     
@@ -123,4 +125,27 @@ Obj[] parse_obj(string data) {
 
 Obj[] parse_obj_from_file(string path) {
     return parse_obj(readText(path));
+}
+
+Mesh[] parse_obj_mesh(string data) {
+    Obj[] objs = parse_obj(data);
+    Mesh[] meshes;
+    
+    foreach(Obj obj; objs) {
+        Mesh m;
+        
+        m.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_INT);
+        
+        m.buffer.set("v", Buffer(obj.v[], GL_FLOAT, obj.v[0].length));
+        if(obj.vt) m.buffer.set("vt", Buffer(obj.vt[], GL_FLOAT, obj.vt[0].length));
+        if(obj.vn) m.buffer.set("vn", Buffer(obj.vn[], GL_FLOAT, obj.vn[0].length));
+        
+        meshes ~= m;
+    }
+    
+    return meshes;
+}
+
+Mesh[] parse_obj_mesh_from_file(string path) {
+    return parse_obj_mesh(readText(path));
 }

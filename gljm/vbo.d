@@ -29,7 +29,11 @@ struct ElementBuffer {
     //@disable this();
     static ElementBuffer opCall() { return ElementBuffer(0); }
     private this(ubyte x) { glGenBuffers(1, &buffer); }
-
+    this(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
+        glGenBuffers(1, &buffer);
+        set_data(data, type, hint);
+    }
+    
     void bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); }
     void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
     
@@ -58,6 +62,10 @@ struct Buffer {
     //@disable this();
     static Buffer opCall() { return Buffer(0); }
     private this(ubyte x) { glGenBuffers(1, &buffer); }
+    this(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
+        glGenBuffers(1, &buffer);
+        set_data(data, type, size, hint);
+    }
     
     void bind() { glBindBuffer(GL_ARRAY_BUFFER, buffer); }
     void bind(GLuint attrib_location) {
