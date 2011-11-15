@@ -175,9 +175,9 @@ Mesh[] load_obj_mesh(string data) {
         
         m.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
         
-        m.buffer.set("v", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
-        if(obj.vt) m.buffer.set("vt", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
-        if(obj.vn) m.buffer.set("vn", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
+        m.buffer.set("position", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
+        if(obj.vt) m.buffer.set("textcoord", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
+        if(obj.vn) m.buffer.set("normal", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
         
         meshes ~= m;
     }
