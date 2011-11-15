@@ -26,13 +26,6 @@ struct Face {
 }
 
 struct Obj {
-    string o;
-    alias o name;
-    string g;
-    alias g group;
-    
-    string mtl;
-    
     size_t v_length = 0;
     size_t vt_length = 0;
     size_t vn_length = 0;
@@ -44,8 +37,7 @@ struct Obj {
     Face[] f;
 }
 
-Obj[] parse_obj(string data) {
-    Obj[] obj;
+Obj parse_obj(string data) {
     Obj cur_obj;
     uint lc = 0;
     
@@ -57,15 +49,7 @@ Obj[] parse_obj(string data) {
         
         switch(line[0]) {
             case '#': continue; break;
-            case 'o': {
-                if(cur_obj.name) {
-                    obj ~= cur_obj;
-                }
-                cur_obj = Obj();
-                cur_obj.name = sline[1];
-                
-                break;
-            }
+            case 'o': debug { writefln("obj: object-name definitions not implemented (line %d)", lc); } break;
             case 'v': {
                 float[] args = conv_array!(float)(sline[1..$]);
                 
@@ -113,10 +97,7 @@ Obj[] parse_obj(string data) {
                 
                 break;
             }
-            case 'g': {
-                cur_obj.group = sline[1];
-                break;
-            }
+            case 'g': debug { writefln("obj: group definitions not implemented (line %d)", lc); } break;
             case 's' : {    
                 debug { writefln("obj: smooth shading not implemented"); }
                 break;
@@ -157,34 +138,26 @@ Obj[] parse_obj(string data) {
         }
     }
     
-    obj ~= cur_obj;
-    
-    return obj;
+    return cur_obj;
 }
 
-Obj[] parse_obj_from_file(string path) {
+Obj parse_obj_from_file(string path) {
     return parse_obj(readText(path));
 }
 
-Mesh[] load_obj_mesh(string data) {
-    Obj[] objs = parse_obj(data);
-    Mesh[] meshes;
+Mesh load_obj_mesh(string data) {
+    Obj obj = parse_obj(data);
+    Mesh mesh;
     
-    foreach(Obj obj; objs) {
-        Mesh m;
-        
-        m.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
-        
-        m.buffer.set("position", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
-        if(obj.vt) m.buffer.set("textcoord", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
-        if(obj.vn) m.buffer.set("normal", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
-        
-        meshes ~= m;
-    }
+    mesh.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
     
-    return meshes;
+    mesh.buffer.set("position", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
+    if(obj.vt) mesh.buffer.set("textcoord", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
+    if(obj.vn) mesh.buffer.set("normal", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
+    
+    return mesh;
 }
 
-Mesh[] load_obj_mesh_from_file(string path) {
+Mesh load_obj_mesh_from_file(string path) {
     return load_obj_mesh(readText(path));
 }
