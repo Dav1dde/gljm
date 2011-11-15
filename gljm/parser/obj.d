@@ -145,8 +145,7 @@ Obj parse_obj_from_file(string path) {
     return parse_obj(readText(path));
 }
 
-Mesh load_obj_mesh(string data) {
-    Obj obj = parse_obj(data);
+Mesh load_obj_mesh(Obj obj) {
     Mesh mesh;
     
     mesh.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
@@ -156,6 +155,10 @@ Mesh load_obj_mesh(string data) {
     if(obj.vn) mesh.buffer.set("normal", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
     
     return mesh;
+}
+
+Mesh load_obj_mesh(string data) {
+    return load_obj_mesh(parse_obj(data));
 }
 
 Mesh load_obj_mesh_from_file(string path) {
