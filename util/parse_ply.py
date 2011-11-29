@@ -129,6 +129,9 @@ def main():
             with open(path) as f:
                 parsed = parse(f.read())
             
+            __import__("pprint").pprint(parsed)
+            sys.exit()
+            
             j = dict()
             
             for l in parsed:

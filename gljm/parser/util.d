@@ -1,5 +1,11 @@
 module gljm.parser.util;
 
+private {
+    import derelict.opengl.gl : GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT,
+                                GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_DOUBLE, GLenum;
+    import std.conv : to;
+}
+
 
 T[][] quad2triangle(T)(T[] quad) {
     return [[quad[0], quad[1], quad[2]], [quad[0], quad[2], quad[3]]];
@@ -52,4 +58,17 @@ unittest {
     assert(myaa["baz"] == 0);
     myaa["foo"] -= 12;
     assert(myaa["foo"] == 0);
+}
+
+void[] convert_value(string value, GLenum type) {
+    switch(type) {
+        case GL_BYTE: byte b = to!(byte)(value); return ((&b)[0 .. byte.sizeof]);
+        case GL_UNSIGNED_BYTE: ubyte b = to!(ubyte)(value); return (&b)[0 .. ubyte.sizeof];
+        case GL_SHORT: short b = to!(short)(value); return (&b)[0 .. short.sizeof];
+        case GL_UNSIGNED_SHORT: ushort b = to!(ushort)(value); return (&b)[0 .. ushort.sizeof];
+        case GL_INT: int b = to!(int)(value); return (&b)[0 .. int.sizeof];
+        case GL_UNSIGNED_INT: uint b = to!(uint)(value); return (&b)[0 .. uint.sizeof];
+        case GL_FLOAT: float b = to!(float)(value); return (&b)[0 .. float.sizeof];
+        case GL_DOUBLE: double b = to!(double)(value); return (&b)[0 .. double.sizeof];
+    }
 }
