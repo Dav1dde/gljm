@@ -12,19 +12,17 @@ private {
 }
 
 enum Format {
-    ascii = 1,
-    big_endian = 2,
-    little_endian = 3
+    ascii,
+    big_endian,
+    little_endian
 }
 
 enum PropertyType {
-    normal = 1,
-    list = 2
+    normal,
+    list
 }
 
 GLenum[string] TYPES;
-GLenum[string] TYPE_SIZES;
-
 static this() {
     TYPES = ["char" : GL_BYTE, "uchar" : GL_UNSIGNED_BYTE,
              "short" : GL_SHORT, "ushort" : GL_UNSIGNED_SHORT,
@@ -71,6 +69,9 @@ struct Ply {
     Format format;
     Element[] elements;
     
+    this(Format f) {
+        format = f;
+    }
 }
 
 Ply parse_ply(string data) {
@@ -79,7 +80,7 @@ Ply parse_ply(string data) {
     }
     
     string[] lines = array(filter!("a.length > 0")(map!(strip)(splitlines(data))));
-    Ply ply;
+    Ply ply = Ply(Format.ascii);
     Element* cur_element;
     bool got_element;
     
