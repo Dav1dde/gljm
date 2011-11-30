@@ -178,9 +178,7 @@ Ply parse_ply(string data) {
         }
         cur_overall_line += element.count;
     }
-    
-    import std.stdio; writefln("%s", ply.elements["vertex"].data[4]);
-    
+        
     return ply;
 }
 
@@ -206,9 +204,6 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
                 }
             }
             mesh.indices = ElementBuffer(s, ply.elements[indices].properties[0].data_type);       
-            uint[] i = [0, 1, 2, 0, 2, 3];
-            //mesh.indices = ElementBuffer(i, GL_UNSIGNED_INT);
-            import std.stdio; writefln("%s\n%s\n\n", s, mesh.indices.data);
         } else {
             throw new Exception("indices element has no properties");
         }
@@ -232,48 +227,7 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
                 }
             }
 
-            auto b = Buffer(buf, cur_ele.properties[0].data_type, props.length);
-            mesh.buffer.set(loc, b);
-            
-            import gljm.util;
-            import std.stdio;
-            
-            //auto arr = mesh.indices; alias uint t;
-            auto arr = mesh.buffer.get(loc); alias float t;
-            auto ele = arr.data;
-            auto size = glenum2size(arr.type);
-            writef("%s: %s: ", loc, ele.length / size);
-            
-            for(int i = 0; i < ele.length; i+=size) {
-                writef("%s ", *cast(t*)ele[i..i+size]);
-            }
-            writefln("");
-            
-            /*
-            void[] s;
-            float[] t = [1.0f, 2.0f, 3.0f, 4.0f, 234.0f, 32.123f];
-            void[] tv = t;
-            
-            foreach(float tt; t) {
-                s ~= convert_value(to!string(tt), GL_FLOAT);
-            }
-            writefln("%s\n%s", tv, s);
-            */
-            
-            float[] a = [1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f];
-            void[] meh, fuuu;
-            foreach(float ff; a) {
-                meh ~= convert_value(to!string(ff), GL_FLOAT);
-            }
-            fuuu = a;
-            
-            
-            if(buf.length) {
-                writefln("%s\n%s\n%s\n", meh, buf, fuuu);
-            }
-            auto b2 = Buffer(a, GL_FLOAT, a.length/3);
-            //mesh.buffer.set(loc, b2);
-        
+            mesh.buffer.set(loc, Buffer(buf, cur_ele.properties[0].data_type, props.length));
         }
         
     }
