@@ -116,9 +116,9 @@ Obj parse_obj(string data) {
                     foreach(string arg; tri) {
                         Face f;
                         string[] s = split(arg, "/");
-                        
+                        short g = -1;
                         switch(s.length) {
-                            case 1: f.v_index = to!(ushort)(s[0]); break;
+                            case 1: f.v_index = to!(short)(s[0]); break;
                             case 2: f.v_index = to!(ushort)(s[0]);
                                     f.vt_index = to!(ushort)(s[1]); break;
                             case 3:
@@ -127,6 +127,7 @@ Obj parse_obj(string data) {
                                     f.vn_index = to!(ushort)(s[2]);
                         default: throw new Exception(format("malformed face definition at line %d", lc));
                         }
+                        --f.v_index; --f.vt_index; --f.vn_index;
                     
                         cur_obj.f ~= f;
                     }
