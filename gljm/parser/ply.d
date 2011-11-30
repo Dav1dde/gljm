@@ -207,7 +207,7 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
             }
             mesh.indices = ElementBuffer(s, ply.elements[indices].properties[0].data_type);       
             uint[] i = [0, 1, 2, 0, 2, 3];
-            mesh.indices = ElementBuffer(i, GL_UNSIGNED_INT);
+            //mesh.indices = ElementBuffer(i, GL_UNSIGNED_INT);
             import std.stdio; writefln("%s\n%s\n\n", s, mesh.indices.data);
         } else {
             throw new Exception("indices element has no properties");
@@ -232,7 +232,7 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
                 }
             }
 
-            auto b = Buffer(buf, cur_ele.properties[0].data_type, cur_ele.count);
+            auto b = Buffer(buf, cur_ele.properties[0].data_type, props.length);
             mesh.buffer.set(loc, b);
             
             import gljm.util;
@@ -272,7 +272,7 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
                 writefln("%s\n%s\n%s\n", meh, buf, fuuu);
             }
             auto b2 = Buffer(a, GL_FLOAT, a.length/3);
-            mesh.buffer.set(loc, b2);
+            //mesh.buffer.set(loc, b2);
         
         }
         
