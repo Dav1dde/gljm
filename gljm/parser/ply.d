@@ -4,11 +4,14 @@ private {
     import derelict.opengl.gl : GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT,
                                 GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_DOUBLE, GLenum;
     import std.string : splitlines, strip, format;
-    import std.algorithm : map, filter, startsWith;
+    import std.algorithm : map, filter, startsWith, countUntil;
     import std.array : array, split;
     import std.conv : to;
     import std.file : readText;
-    import gljm.parser.util : convert_value;
+    import gljm.parser.util : convert_value, flatten, quad2triangle;
+    import gljm.mesh : Mesh;
+    import gljm.vbo : ElementBuffer, Buffer;
+    import gljm.util : glenum2size;
 }
 
 enum Format {
@@ -67,7 +70,7 @@ struct Element {
 
 struct Ply {
     Format format;
-    Element[] elements;
+    Element[string] elements;
     
     this(Format f) {
         format = f;
@@ -99,8 +102,8 @@ Ply parse_ply(string data) {
         switch(sline[0]) {
             case "comment": continue;
             case "element": {
-                ply.elements ~= Element(sline[1], to!(uint)(sline[2]));
-                cur_element = &(ply.elements[$ - 1]);
+                ply.elements[sline[1]] = Element(sline[1], to!(uint)(sline[2]));
+                cur_element = &(ply.elements[sline[1]]);
                 got_element = true;
                 break;
             }
@@ -138,8 +141,7 @@ Ply parse_ply(string data) {
     
     uint cur_overall_line = lc;
     
-    foreach(ref Element element; ply.elements) {
-        inner_lines:
+    foreach(string s, ref Element element; ply.elements) {
         foreach(ladd; 1..element.count+1) {
             string[] sline = split(lines[(cur_overall_line+ladd)-1]); // cur_overall_line+ladd != index
             
@@ -177,5 +179,119 @@ Ply parse_ply(string data) {
         cur_overall_line += element.count;
     }
     
+    import std.stdio; writefln("%s", ply.elements["vertex"].data[4]);
+    
     return ply;
+}
+
+Ply parse_ply_from_file(string path) {
+    return parse_ply(readText(path));
+}
+
+Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
+    Mesh mesh;
+    
+    if(indices in ply.elements) { // is there an indices buffer defined?
+        if(ply.elements[indices].properties.length) {
+            void[] s;
+            uint size = glenum2size(ply.elements[indices].properties[0].data_type);
+            foreach(void[] inner; ply.elements[indices].data) {
+                if(inner.length == 4*size) { // quad
+                    void[][][] tris = quad2triangle(inner, size);
+                    s ~= flatten(tris[0]); s ~= flatten(tris[1]);
+                } else if(inner.length == 3*size) { // triangle
+                    s ~= inner;
+                } else {
+                    throw new Exception(format("unsupported number of indices in element \"%s\"", indices));
+                }
+            }
+            mesh.indices = ElementBuffer(s, ply.elements[indices].properties[0].data_type);       
+            uint[] i = [0, 1, 2, 0, 2, 3];
+            mesh.indices = ElementBuffer(i, GL_UNSIGNED_INT);
+            import std.stdio; writefln("%s\n%s\n\n", s, mesh.indices.data);
+        } else {
+            throw new Exception("indices element has no properties");
+        }
+    }
+    
+    foreach(string ele, string[][string] r; locs) {
+        foreach(string loc, string[] props; r) {
+            Element* cur_ele = &(ply.elements[ele]);
+            
+            int[string] i;
+            foreach(string prop; props) {
+                i[prop] = countUntil!("a.name == b")(cur_ele.properties, prop);
+            }
+            
+            void[] buf;
+            for(int c = 0; c < cur_ele.count * cur_ele.properties.length; c += cur_ele.properties.length){
+                foreach(string key; props) {
+                    if(i[key] >= 0) {
+                        buf ~= cur_ele.data[c+i[key]];
+                    }
+                }
+            }
+
+            auto b = Buffer(buf, cur_ele.properties[0].data_type, cur_ele.count);
+            mesh.buffer.set(loc, b);
+            
+            import gljm.util;
+            import std.stdio;
+            
+            //auto arr = mesh.indices; alias uint t;
+            auto arr = mesh.buffer.get(loc); alias float t;
+            auto ele = arr.data;
+            auto size = glenum2size(arr.type);
+            writef("%s: %s: ", loc, ele.length / size);
+            
+            for(int i = 0; i < ele.length; i+=size) {
+                writef("%s ", *cast(t*)ele[i..i+size]);
+            }
+            writefln("");
+            
+            /*
+            void[] s;
+            float[] t = [1.0f, 2.0f, 3.0f, 4.0f, 234.0f, 32.123f];
+            void[] tv = t;
+            
+            foreach(float tt; t) {
+                s ~= convert_value(to!string(tt), GL_FLOAT);
+            }
+            writefln("%s\n%s", tv, s);
+            */
+            
+            float[] a = [1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f];
+            void[] meh, fuuu;
+            foreach(float ff; a) {
+                meh ~= convert_value(to!string(ff), GL_FLOAT);
+            }
+            fuuu = a;
+            
+            
+            if(buf.length) {
+                writefln("%s\n%s\n%s\n", meh, buf, fuuu);
+            }
+            auto b2 = Buffer(a, GL_FLOAT, a.length/3);
+            mesh.buffer.set(loc, b2);
+        
+        }
+        
+    }
+    
+    
+    return mesh;
+}
+
+Mesh load_ply_mesh(Ply ply) {
+    return load_ply_mesh(ply, "face", ["vertex" : ["position" : ["x", "y", "z"],
+                                                   "normal" : ["nx", "ny", "nz"],
+                                                   "color" : ["red", "green", "blue", "alpha"]]]);
+}
+
+Mesh load_ply_mesh(string data) {
+    return load_ply_mesh(parse_ply(data));
+}
+
+Mesh load_ply_mesh_from_file(string path) {
+    return load_ply_mesh(readText(path));
 }

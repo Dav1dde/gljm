@@ -79,7 +79,7 @@ struct Mesh {
         if(indices) {
             indices.bind();
 
-            glDrawElements(mode, c, GL_UNSIGNED_SHORT, cast(void *)(offset));
+            glDrawElements(mode, c, indices.type, cast(void *)(offset));
             indices.unbind();
         } else {
             glDrawArrays(mode, offset, c);

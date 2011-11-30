@@ -7,17 +7,20 @@ private {
 }
 
 
-T[][] quad2triangle(T)(T[] quad) {
+T[][] quad2triangle(T)(T[] quad) if(!is(T : void)) {
     return [[quad[0], quad[1], quad[2]], [quad[0], quad[2], quad[3]]];
+}
+
+T[][][] quad2triangle(T : void)(T[] quad, uint size = 4) {
+    return [[quad[0..size], quad[1*size..2*size], quad[2*size..3*size]],
+            [quad[0..size], quad[2*size..3*size], quad[3*size..4*size]]];
 }
 
 T[] flatten(T)(T[][] arr) {
     T[] res;
     
-    foreach(T[] a1; arr) {
-        foreach(T a2; a1) {
-            res ~= a2;
-        }
+    foreach(T[] a; arr) {
+        res ~= a;
     }
     
     return res;
@@ -59,16 +62,24 @@ unittest {
     myaa["foo"] -= 12;
     assert(myaa["foo"] == 0);
 }
+import std.stdio;
 
+void[] convert_value_impl(T)(string value) {
+    void[] store = new ubyte[8];
+    
+    T b = to!(T)(value);
+    *cast(T*)(store.ptr) = b;
+    return store[0 .. T.sizeof];
+}
 void[] convert_value(string value, GLenum type) {
     switch(type) {
-        case GL_BYTE: byte b = to!(byte)(value); return ((&b)[0 .. byte.sizeof]);
-        case GL_UNSIGNED_BYTE: ubyte b = to!(ubyte)(value); return (&b)[0 .. ubyte.sizeof];
-        case GL_SHORT: short b = to!(short)(value); return (&b)[0 .. short.sizeof];
-        case GL_UNSIGNED_SHORT: ushort b = to!(ushort)(value); return (&b)[0 .. ushort.sizeof];
-        case GL_INT: int b = to!(int)(value); return (&b)[0 .. int.sizeof];
-        case GL_UNSIGNED_INT: uint b = to!(uint)(value); return (&b)[0 .. uint.sizeof];
-        case GL_FLOAT: float b = to!(float)(value); return (&b)[0 .. float.sizeof];
-        case GL_DOUBLE: double b = to!(double)(value); return (&b)[0 .. double.sizeof];
+        case GL_BYTE: return convert_value_impl!(byte)(value);
+        case GL_UNSIGNED_BYTE: return convert_value_impl!(ubyte)(value);
+        case GL_SHORT: return convert_value_impl!(short)(value);
+        case GL_UNSIGNED_SHORT: return convert_value_impl!(ushort)(value);
+        case GL_INT: return convert_value_impl!(int)(value);
+        case GL_UNSIGNED_INT: return convert_value_impl!(uint)(value);
+        case GL_FLOAT: return convert_value_impl!(float)(value);
+        case GL_DOUBLE: return convert_value_impl!(double)(value);
     }
 }
