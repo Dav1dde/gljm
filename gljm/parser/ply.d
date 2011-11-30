@@ -186,12 +186,13 @@ Ply parse_ply_from_file(string path) {
     return parse_ply(readText(path));
 }
 
-Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
+Mesh load_ply_mesh(Ply ply, string[][string][string] locs, string indices = "") {
     Mesh mesh;
     
     if(indices in ply.elements) { // is there an indices buffer defined?
         if(ply.elements[indices].properties.length) {
             void[] s;
+            // all datatypes must have the same size in memory!
             uint size = glenum2size(ply.elements[indices].properties[0].data_type);
             foreach(void[] inner; ply.elements[indices].data) {
                 if(inner.length == 4*size) { // quad
@@ -210,9 +211,8 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
     }
     
     foreach(string ele, string[][string] r; locs) {
-        foreach(string loc, string[] props; r) {
-            Element* cur_ele = &(ply.elements[ele]);
-            
+        Element* cur_ele = &(ply.elements[ele]);
+        foreach(string loc, string[] props; r) {            
             int[string] i;
             foreach(string prop; props) {
                 i[prop] = countUntil!("a.name == b")(cur_ele.properties, prop);
@@ -237,9 +237,9 @@ Mesh load_ply_mesh(Ply ply, string indices, string[][string][string] locs) {
 }
 
 Mesh load_ply_mesh(Ply ply) {
-    return load_ply_mesh(ply, "face", ["vertex" : ["position" : ["x", "y", "z"],
-                                                   "normal" : ["nx", "ny", "nz"],
-                                                   "color" : ["red", "green", "blue", "alpha"]]]);
+    return load_ply_mesh(ply, ["vertex" : ["position" : ["x", "y", "z"],
+                                           "normal" : ["nx", "ny", "nz"],
+                                           "color" : ["red", "green", "blue", "alpha"]]], "face");
 }
 
 Mesh load_ply_mesh(string data) {

@@ -116,7 +116,7 @@ Obj parse_obj(string data) {
                     foreach(string arg; tri) {
                         Face f;
                         string[] s = split(arg, "/");
-                        short g = -1;
+
                         switch(s.length) {
                             case 1: f.v_index = to!(short)(s[0]); break;
                             case 2: f.v_index = to!(ushort)(s[0]);
