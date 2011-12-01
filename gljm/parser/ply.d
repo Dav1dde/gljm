@@ -3,7 +3,7 @@ module gljm.parser.ply;
 private {
     import derelict.opengl.gl : GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT,
                                 GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_DOUBLE, GLenum;
-    import std.string : splitlines, strip, format;
+    import std.string : splitLines, strip, format;
     import std.algorithm : map, filter, startsWith, countUntil;
     import std.array : array, split;
     import std.conv : to;
@@ -82,7 +82,7 @@ Ply parse_ply(string data) {
         throw new Exception("invalid data format");
     }
     
-    string[] lines = array(filter!("a.length > 0")(map!(strip)(splitlines(data))));
+    string[] lines = array(filter!("a.length > 0")(map!(strip)(splitLines(data))));
     Ply ply = Ply(Format.ascii);
     Element* cur_element;
     bool got_element;
@@ -213,7 +213,7 @@ Mesh load_ply_mesh(Ply ply, string[][string][string] locs, string indices = "") 
     foreach(string ele, string[][string] r; locs) {
         Element* cur_ele = &(ply.elements[ele]);
         foreach(string loc, string[] props; r) {            
-            int[string] i;
+            size_t[string] i;
             foreach(string prop; props) {
                 i[prop] = countUntil!("a.name == b")(cur_ele.properties, prop);
             }
@@ -227,7 +227,7 @@ Mesh load_ply_mesh(Ply ply, string[][string][string] locs, string indices = "") 
                 }
             }
 
-            mesh.buffer.set(loc, Buffer(buf, cur_ele.properties[0].data_type, props.length));
+            mesh.buffer.set(loc, Buffer(buf, cur_ele.properties[0].data_type, to!(int)(props.length)));
         }
         
     }

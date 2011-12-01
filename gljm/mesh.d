@@ -25,7 +25,7 @@ struct Mesh {
             _members[s] = b;
             
             if(!count) {
-                count = (b.data.length / glenum2size(b.type)) / b.size;
+                count = (to!(int)(b.data.length) / glenum2size(b.type)) / b.size;
             }
         }
 
@@ -68,7 +68,7 @@ struct Mesh {
     BufferS buffer;
     
     @property int count() {
-        if(indices) { return indices.data.length / glenum2size(indices.type); }
+        if(indices) { return to!(int)(indices.data.length) / glenum2size(indices.type); }
         else { return buffer.count; }
     }
     
