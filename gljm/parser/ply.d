@@ -213,13 +213,13 @@ Mesh load_ply_mesh(Ply ply, string[][string][string] locs, string indices = "") 
     foreach(string ele, string[][string] r; locs) {
         Element* cur_ele = &(ply.elements[ele]);
         foreach(string loc, string[] props; r) {            
-            size_t[string] i;
+            int[string] i;
             foreach(string prop; props) {
-                i[prop] = countUntil!("a.name == b")(cur_ele.properties, prop);
+                i[prop] = to!(int)(countUntil!("a.name == b")(cur_ele.properties, prop));
             }
             
             void[] buf;
-            for(int c = 0; c < cur_ele.count * cur_ele.properties.length; c += cur_ele.properties.length){
+            for(size_t c = 0; c < cur_ele.count * cur_ele.properties.length; c += cur_ele.properties.length){
                 foreach(string key; props) {
                     if(i[key] >= 0) {
                         buf ~= cur_ele.data[c+i[key]];

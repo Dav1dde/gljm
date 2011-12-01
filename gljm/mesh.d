@@ -6,6 +6,7 @@ private {
                                 GL_TRIANGLES, GL_UNSIGNED_SHORT;
     import gljm.util : glenum2size;
     import gljm.vbo : Buffer, ElementBuffer, BufferData;
+    import std.conv;
     
     debug {
         import std.stdio : writefln;

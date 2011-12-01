@@ -26,10 +26,10 @@ struct Face {
 }
 
 struct Obj {
-    size_t v_length = 0;
-    size_t vt_length = 0;
-    size_t vn_length = 0;
-    const size_t f_length = 3;
+    int v_length = 0;
+    int vt_length = 0;
+    int vn_length = 0;
+    const int f_length = 3;
     
     float[][] v;
     float[][] vt;
@@ -56,7 +56,7 @@ Obj parse_obj(string data) {
                 switch(line[1]) {
                     case ' ': {
                         cur_obj.v ~= args;
-                        if(!cur_obj.v_length) { cur_obj.v_length = args.length; }
+                        if(!cur_obj.v_length) { cur_obj.v_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.v_length) {
                             throw new Exception(format("mismatching number of vertex-coordinates at line %d", lc)); }
                         }
@@ -64,15 +64,15 @@ Obj parse_obj(string data) {
                     }
                     case 't': {
                         cur_obj.v ~= args;
-                        if(!cur_obj.v_length) { cur_obj.v_length = args.length; }
-                        else { if(args.length != cur_obj.v_length) {
+                        if(!cur_obj.vt_length) { cur_obj.vt_length = to!(int)(args.length); }
+                        else { if(args.length != cur_obj.vt_length) {
                             throw new Exception(format("mismatching number of texture-coordinates at line %d", lc)); }
                         }
                         break;
                     }
                     case 'n': {
                         cur_obj.vn ~= args;
-                        if(!cur_obj.vn_length) { cur_obj.vn_length = args.length; }
+                        if(!cur_obj.vn_length) { cur_obj.vn_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.vn_length) {
                             throw new Exception(format("mismatching number of normal-coordinates at line %d", lc)); }
                         }
