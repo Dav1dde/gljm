@@ -5,7 +5,7 @@ private {
     import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
     import gljm.parser.util : quad2triangle, flatten;
-    import derelict.opengl.gl : GL_UNSIGNED_SHORT, GL_FLOAT;
+    import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip, format;
     import std.array : split, array;
@@ -20,9 +20,9 @@ private {
 
 
 struct Face {
-    ushort v_index;
-    ushort vt_index;
-    ushort vn_index;
+    uint v_index;
+    uint vt_index;
+    uint vn_index;
 }
 
 struct Obj {
@@ -118,13 +118,13 @@ Obj parse_obj(string data) {
                         string[] s = split(arg, "/");
 
                         switch(s.length) {
-                            case 1: f.v_index = to!(short)(s[0]); break;
-                            case 2: f.v_index = to!(ushort)(s[0]);
-                                    f.vt_index = to!(ushort)(s[1]); break;
+                            case 1: f.v_index = to!(uint)(s[0]); break;
+                            case 2: f.v_index = to!(uint)(s[0]);
+                                    f.vt_index = to!(uint)(s[1]); break;
                             case 3:
-                                    f.v_index = to!(ushort)(s[0]);
-                                    if(s[1]) { f.vt_index = to!(ushort)(s[1]); }
-                                    f.vn_index = to!(ushort)(s[2]);
+                                    f.v_index = to!(uint)(s[0]);
+                                    if(s[1]) { f.vt_index = to!(uint)(s[1]); }
+                                    f.vn_index = to!(uint)(s[2]);
                         default: throw new Exception(format("malformed face definition at line %d", lc));
                         }
                         --f.v_index; --f.vt_index; --f.vn_index;
@@ -149,7 +149,7 @@ Obj parse_obj_from_file(string path) {
 Mesh load_obj_mesh(Obj obj) {
     Mesh mesh;
     
-    mesh.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_SHORT);
+    mesh.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_INT);
     
     mesh.buffer.set("position", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
     if(obj.vt) mesh.buffer.set("textcoord", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
