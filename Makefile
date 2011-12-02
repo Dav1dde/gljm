@@ -1,3 +1,5 @@
+# thanks to "bioinfornatics" from the #D channel on freenode for making this Makefile
+
 export PROJECT_NAME = gljm
 # include some command
 include command.make
@@ -12,13 +14,19 @@ define make-lib
     $(RANLIB) $@
 endef
 
-all: $(LIBNAME_GLJM) header doc
+all: static-libs header doc
+
+static-libs: $(LIBNAME_GLJM)
 
 shared-libs: $(SONAME_GLJM)
 
 header : $(HEADERS)
 
 doc: $(DOCUMENTATIONS)
+
+geany-tag:
+	$(MKDIR) geany_config
+	geany -c geany_config -g $(PROJECT_NAME).d.tags $(SOURCES)
 
 # For build lib need create object files and after run make-lib
 $(LIBNAME_GLJM): $(OBJECTS)
