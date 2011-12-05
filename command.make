@@ -113,13 +113,14 @@ else
     LDFLAGS += -m32
 endif
 
+
 # Define var PREFIX, LIB_DIR and INCLUDEDIR
 ifndef PREFIX
     ifeq ($(OS),"Windows") 
         PREFIX = $(PROGRAMFILES)
-    else ifeq ("$(OS)", Linux)
+    else ifeq ($(OS), "Linux")
         PREFIX = /usr/local
-    else ifeq ("$(OS)", Darwin)
+    else ifeq ($(OS), "Darwin")
         PREFIX = /usr/local
     endif
 endif
@@ -133,11 +134,11 @@ ifndef LIB_DIR
     endif
 endif
 ifndef INCLUDE_DIR
-    ifeq ($(OS),Windows) 
+    ifeq ($(OS), "Windows") 
         INCLUDE_DIR = $(PROGRAMFILES)\$(PROJECT_NAME)\import
-    else ifeq ($(OS), Linux)
+    else ifeq ($(OS), "Linux")
         INCLUDE_DIR = $(PREFIX)/include/d/$(PROJECT_NAME)
-    else ifeq ($(OS), Darwin)
+    else ifeq ($(OS), "Darwin")
         INCLUDE_DIR = $(PREFIX)/include/d/$(PROJECT_NAME)
     endif
 endif
@@ -175,6 +176,8 @@ export MODEL
 export FPIC
 export LINKERFLAG
 export OUTPUT
+export DF
+export HF
 export PREFIX
 export LIB_DIR
 export INCLUDE_DIR
