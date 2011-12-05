@@ -25,6 +25,9 @@ header: $(HEADERS)
 
 doc: $(DOCUMENTATIONS)
 
+#ddoc:
+#	$(DC) cutedoc.ddoc settings.ddoc modules.ddoc index.d $(DF)$(DOC_PATH)/index.html
+
 geany-tag:
 	$(MKDIR) geany_config
 	geany -c geany_config -g $(PROJECT_NAME).d.tags $(SOURCES)
@@ -39,11 +42,11 @@ $(BUILD_PATH)/%.o : %.d
 
 # Generate Header files
 $(IMPORT_PATH)/%.di : %.d
-	$(DC) $(DFLAGS) $(DFLAGS_LINK) $(DFLAGS_IMPORT) -c -o- $< -Hf$@
+	$(DC) $(DFLAGS) $(DFLAGS_LINK) $(DFLAGS_IMPORT) -c -o- $< $(HF)$@
 
 # Generate Documentation
 $(DOC_PATH)/%.html : %.d
-	$(DC) $(DFLAGS) $(DFLAGS_LINK) $(DFLAGS_IMPORT) -c -o- $< -Df$@
+	$(DC) $(DFLAGS) $(DFLAGS_LINK) $(DFLAGS_IMPORT) -c -o- $< $(DF)$@
 
 # For build shared lib need create shared object files
 $(SONAME_GLJM): $(PICOBJECTS)
@@ -61,6 +64,7 @@ clean:
 	$(RM) $(LIBNAME_GLJM)
 	$(RM) $(HEADERS)
 	$(RM) $(DOCUMENTATIONS)
+#	$(RM) $(DOC_PATH)/index.html
 
 install:
 	$(MKDIR) $(LIB_DIR)
