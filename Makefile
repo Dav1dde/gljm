@@ -10,8 +10,9 @@ PICOBJECTS         = $(patsubst %.d,$(BUILD_PATH)/%.pic.o,$(SOURCES))
 HEADERS            = $(patsubst %.d,$(IMPORT_PATH)/%.di,  $(SOURCES))
 DOCUMENTATIONS     = $(patsubst %.d,$(DOC_PATH)/%.html,   $(SOURCES))
 define make-lib
-    $(AR) rcs $@ $^
-    $(RANLIB) $@
+	$(MKDIR) $(DLIB_PATH)
+	$(AR) rcs $(DLIB_PATH)/$@ $^
+	$(RANLIB) $(DLIB_PATH)/$@
 endef
 
 all: static-libs header doc
@@ -20,7 +21,7 @@ static-libs: $(LIBNAME_GLJM)
 
 shared-libs: $(SONAME_GLJM)
 
-header : $(HEADERS)
+header: $(HEADERS)
 
 doc: $(DOCUMENTATIONS)
 
@@ -60,3 +61,7 @@ clean:
 	$(RM) $(LIBNAME_GLJM)
 	$(RM) $(HEADERS)
 	$(RM) $(DOCUMENTATIONS)
+
+install:
+	$(CP) $(DLIB_PATH)/* $(LIB_DIR)
+	$(CP) $(IMPORT_PATH)/* $(INCLUDE_DIR)

@@ -113,32 +113,32 @@ else
     LDFLAGS += -m32
 endif
 
-# Define var PREFIX, LIBDIR and INCLUDEDIR
+# Define var PREFIX, LIB_DIR and INCLUDEDIR
 ifndef PREFIX
     ifeq ($(OS),"Windows") 
-        LIBDIR = $(PROGRAMFILES)
+        PREFIX = $(PROGRAMFILES)
     else ifeq ("$(OS)", Linux)
-        LIBDIR = /usr/local
+        PREFIX = /usr/local
     else ifeq ("$(OS)", Darwin)
-        LIBDIR = /usr/local
+        PREFIX = /usr/local
     endif
 endif
-ifndef LIBDIR
+ifndef LIB_DIR
     ifeq ($(OS),"Windows") 
-        LIBDIR = $(PREFIX)\$(PROJECT_NAME)\lib
+        LIB_DIR = $(PREFIX)\$(PROJECT_NAME)\lib
     else ifeq ($(OS), "Linux")
-        LIBDIR = $(PREFIX)/usr/local/lib
+        LIB_DIR = $(PREFIX)/lib
     else ifeq ($(OS), "Darwin")
-        LIBDIR = $(PREFIX)/usr/local/lib
+        LIB_DIR = $(PREFIX)/lib
     endif
 endif
-ifndef INCLUDEDIR
+ifndef INCLUDE_DIR
     ifeq ($(OS),Windows) 
-        LIBDIR = $(PROGRAMFILES)\$(PROJECT_NAME)\import
+        INCLUDE_DIR = $(PROGRAMFILES)\$(PROJECT_NAME)\import
     else ifeq ($(OS), Linux)
-        LIBDIR = $(PREFIX)/include/d/$(PROJECT_NAME)
+        INCLUDE_DIR = $(PREFIX)/include/d/$(PROJECT_NAME)
     else ifeq ($(OS), Darwin)
-        LIBDIR = $(PREFIX)/include/d/$(PROJECT_NAME)
+        INCLUDE_DIR = $(PREFIX)/include/d/$(PROJECT_NAME)
     endif
 endif
 
@@ -150,6 +150,7 @@ DLIB_PATH          = ./lib
 IMPORT_PATH        = ./import
 DOC_PATH           = ./doc
 BUILD_PATH         = ./build
+
 DFLAGS_IMPORT      = -I"src" -I"gljm"
 DFLAGS_LINK        = $(LDFLAGS) $(LINKERFLAG)-lDerelictGL $(LINKERFLAG)-lDerelictUtil
 
@@ -175,13 +176,13 @@ export FPIC
 export LINKERFLAG
 export OUTPUT
 export PREFIX
-export LIBDIR
-export INCLUDEDIR
+export LIB_DIR
+export INCLUDE_DIR
 export message
 export CP
 export RM
 export MKDIR
-export LIB_PATH
+export DLIB_PATH
 export IMPORT_PATH
 export DOC_PATH
 export BUILD_PATH
