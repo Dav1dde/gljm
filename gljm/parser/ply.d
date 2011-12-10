@@ -246,6 +246,15 @@ Mesh load_ply_mesh(string data) {
     return load_ply_mesh(parse_ply(data));
 }
 
+Mesh load_ply_mesh(string data, out Ply ply) {
+    ply = parse_ply(data);
+    return load_ply_mesh(ply);
+}
+
 Mesh load_ply_mesh_from_file(string path) {
     return load_ply_mesh(readText(path));
+}
+
+Mesh load_ply_mesh_from_file(string path, out Ply ply) {
+    return load_ply_mesh(readText(path), ply);
 }
