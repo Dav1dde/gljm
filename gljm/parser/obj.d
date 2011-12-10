@@ -18,6 +18,41 @@ private {
     }
 }
 
+struct Color(type, int size) if((size == 3) || (size == 4)) {
+    type[size] color;
+    alias color this;
+    
+    private @property type get(size_t i)() { return color[i]; }
+    private @property void set(size_t i)(type value) { color[i] = value; }
+    
+    alias get!0 r;
+    alias set!0 r;
+    alias get!1 g;
+    alias set!1 g;
+    alias get!2 b;
+    alias set!2 b;
+    static if(size == 4) {
+        alias get!3 a;
+        alias set!3 a;
+    }
+    
+    static if(size == 3) {
+        this(type r_, type g_, type b_) { r = r_; g = g_; b = b_; }
+    } else {
+        this(type r_, type g_, type b_, type a_) { r = r_; g = g_; b = b_; a = a_; }
+    }
+}
+
+alias Color!(float, 3) color3;
+
+struct Material {
+    color3 ambient = color3(0.2f, 0.2f, 0.2f);
+    color3 diffuse = color3(0.8f, 0.8f, 0.8f);
+    color3 specular = color3(1.0f, 1.0f, 1.0f);
+    float transparency = 1.0f;
+    float shininess = 0.0f;
+    ushort illum = 0;
+}
 
 struct Face {
     uint v_index;
@@ -35,6 +70,89 @@ struct Obj {
     float[][] vt;
     float[][] vn;
     Face[] f;
+    
+    Material[string] materials;
+}
+
+Material[string] parse_mtl(string data) {
+    Material[string] mtls;
+    Material *cur_mtl;
+    bool got_mtl = false;
+    uint lc = 0;
+    
+    foreach(string line; splitlines(data)) {
+        lc++;
+        line = strip(line);
+        if(!line.length || line[0] == '#') { continue; }
+        string[] sline = split(line);
+        
+        if(!got_mtl && sline[0] != "newmtl") {
+            throw new Exception("material must be defined before anything else.");
+        }
+        
+        switch(sline[0]) {
+            case "newmtl": 
+                Material m;
+                string k = sline.length == 2 ? sline[1]:"";
+                mtls[k] = m;
+                cur_mtl = &mtls[k];
+                got_mtl = true;
+                break;
+            case "Ka": {
+                if(sline.length != 4) {
+                    throw new Exception(format("malformed ambient color at line: %d.", lc));
+                }
+                
+                cur_mtl.ambient = color3(to!(float)(sline[1]), to!(float)(sline[2]), to!(float)(sline[3]));
+                break;
+            }
+            case "Kd": {
+                if(sline.length != 4) {
+                    throw new Exception(format("malformed ambient color at line: %d.", lc));
+                }
+                
+                cur_mtl.diffuse = color3(to!(float)(sline[1]), to!(float)(sline[2]), to!(float)(sline[3]));
+                break;
+            }
+            case "Ks": {
+                if(sline.length != 4) {
+                    throw new Exception(format("malformed ambient color at line: %d.", lc));
+                }
+                
+                cur_mtl.specular = color3(to!(float)(sline[1]), to!(float)(sline[2]), to!(float)(sline[3]));
+                break;
+            }
+            case "d":
+            case "Tr":
+                if(sline.length != 2) {
+                    throw new Exception(format("malformed transparency at line: %d.", lc));
+                }
+                
+                cur_mtl.transparency = to!(float)(sline[1]);
+                break;
+            case "Ns":
+                if(sline.length != 2) {
+                    throw new Exception(format("malformed shininess at line: %d.", lc));
+                }
+                
+                cur_mtl.shininess = to!(float)(sline[1]);
+                break;
+            case "illum": 
+                if(sline.length != 2) {
+                    throw new Exception(format("malformed illumination model at line: %d.", lc));
+                }
+                
+                ushort illum = to!(ushort)(sline[1]);
+                if(illum > 10) {
+                    throw new Exception(format("illumination model exceeds \"10\" at line: %d.", lc));
+                }
+                cur_mtl.illum = illum;
+                break;
+            default: throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+        }
+    }
+    
+    return mtls;
 }
 
 Obj parse_obj(string data) {
