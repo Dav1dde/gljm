@@ -4,7 +4,7 @@ private {
     import gljm.mesh : Mesh;
     import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
-    import gljm.parser.util : quad2triangle, flatten;
+    import gljm.parser.util : quad2triangle, flatten, updateAA, DefaultAA;
     import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip, format;
@@ -12,6 +12,7 @@ private {
     import std.algorithm : map;
     import std.conv : to;
     import std.range : chain;
+    import std.path : buildPath;
     
     debug {
         import std.stdio : writefln;
@@ -52,12 +53,14 @@ struct Material {
     float transparency = 1.0f;
     float shininess = 0.0f;
     ushort illum = 0;
+    float optical_density = 1.0f;
 }
 
 struct Face {
     uint v_index;
     uint vt_index;
     uint vn_index;
+    Material material;
 }
 
 struct Obj {
@@ -73,6 +76,7 @@ struct Obj {
     
     Material[string] materials;
 }
+
 
 Material[string] parse_mtl(string data) {
     Material[string] mtls;
@@ -137,6 +141,13 @@ Material[string] parse_mtl(string data) {
                 
                 cur_mtl.shininess = to!(float)(sline[1]);
                 break;
+            case "Ni":
+                if(sline.length != 2) {
+                    throw new Exception(format("malformed optical density at line: %d.", lc));
+                }
+                
+                cur_mtl.optical_density = to!(float)(sline[1]);
+                break;
             case "illum": 
                 if(sline.length != 2) {
                     throw new Exception(format("malformed illumination model at line: %d.", lc));
@@ -148,15 +159,18 @@ Material[string] parse_mtl(string data) {
                 }
                 cur_mtl.illum = illum;
                 break;
-            default: throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+            default:
+                //throw new Exception(format("unknown mtl-definition \"%s\" at line %d.", sline[0], lc));
+                debug { writefln("unknown mtl-definition \"%s\" at line %d.", sline[0], lc); }
         }
     }
     
     return mtls;
 }
 
-Obj parse_obj(string data) {
+Obj parse_obj(string data, string mtl_path = "") {
     Obj cur_obj;
+    Material cur_mtl;
     uint lc = 0;
     
     foreach(string line; splitlines(data)) {
@@ -167,7 +181,7 @@ Obj parse_obj(string data) {
         
         switch(line[0]) {
             case '#': continue; break;
-            case 'o': debug { writefln("obj: object-name definitions not implemented (line %d)", lc); } break;
+            case 'o': debug { writefln("obj: object-name definitions not implemented (line %d).", lc); } break;
             case 'v': {
                 float[] args = conv_array!(float)(sline[1..$]);
                 
@@ -176,7 +190,7 @@ Obj parse_obj(string data) {
                         cur_obj.v ~= args;
                         if(!cur_obj.v_length) { cur_obj.v_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.v_length) {
-                            throw new Exception(format("mismatching number of vertex-coordinates at line %d", lc)); }
+                            throw new Exception(format("mismatching number of vertex-coordinates at line %d.", lc)); }
                         }
                         break;
                     }
@@ -184,7 +198,7 @@ Obj parse_obj(string data) {
                         cur_obj.v ~= args;
                         if(!cur_obj.vt_length) { cur_obj.vt_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.vt_length) {
-                            throw new Exception(format("mismatching number of texture-coordinates at line %d", lc)); }
+                            throw new Exception(format("mismatching number of texture-coordinates at line %d.", lc)); }
                         }
                         break;
                     }
@@ -192,34 +206,42 @@ Obj parse_obj(string data) {
                         cur_obj.vn ~= args;
                         if(!cur_obj.vn_length) { cur_obj.vn_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.vn_length) {
-                            throw new Exception(format("mismatching number of normal-coordinates at line %d", lc)); }
+                            throw new Exception(format("mismatching number of normal-coordinates at line %d.", lc)); }
                         }
                         break;
                     }
-                    default: throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+                    default: throw new Exception(format("unknown definition \"%s\" at line %d.", sline[0], lc));
                 }
                 break;
             }
             case 'm': {
-                debug { writefln("obj: material template libraries not implemented"); }
                 if(sline[0] != "mtllib") {
-                    throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+                    throw new Exception(format("unknown definition \"%s\" at line %d.", sline[0], lc));
+                } else if(sline.length != 2) {
+                    throw new Exception(format("malformed mtllib declaration at line %d.", lc));
+                }
+                if(mtl_path.length) {
+                    updateAA(cur_obj.materials, parse_mtl(readText(buildPath(mtl_path, sline[1]))));
+                } else {
+                    debug { writefln("obj: no path to material template libraries passed."); }
                 }
                 break;
             }
             case 'u': {
-                debug { writefln("obj: material template libraries not implemented"); }
                 if(sline[0] != "usemtl") {
-                    throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+                    throw new Exception(format("unknown definition \"%s\" at line %d.", sline[0], lc));
                 }
-                
+                string k = sline.length == 2 ? sline[1]:"";
+                if(k in cur_obj.materials) {
+                    cur_mtl = cur_obj.materials[k];
+                } else {
+                    debug { writefln("obj: no matching material for \"%s\" found (line %d).", k, lc); }
+                    cur_mtl = Material();
+                }
                 break;
             }
-            case 'g': debug { writefln("obj: group definitions not implemented (line %d)", lc); } break;
-            case 's' : {    
-                debug { writefln("obj: smooth shading not implemented"); }
-                break;
-            }
+            case 'g': debug { writefln("obj: group definitions not implemented (line %d).", lc); } break;
+            case 's' : debug { writefln("obj: smooth shading not implemented"); } break;
             case 'f': {
                 string[] args = sline[1..$];
                                
@@ -227,7 +249,7 @@ Obj parse_obj(string data) {
                 if(args.length == 4) {
                     tris = quad2triangle(args);
                 } else if((args.length > 4) || (args.length < 3)) {
-                    throw new Exception(format("too short or too long face definition at line %d", lc));
+                    throw new Exception(format("too short or too long face definition at line %d.", lc));
                 }
                 
                 foreach(string[] tri; tris) {
@@ -243,8 +265,9 @@ Obj parse_obj(string data) {
                                     f.v_index = to!(uint)(s[0]);
                                     if(s[1]) { f.vt_index = to!(uint)(s[1]); }
                                     f.vn_index = to!(uint)(s[2]);
-                        default: throw new Exception(format("malformed face definition at line %d", lc));
+                            default: throw new Exception(format("malformed face definition at line %d.", lc));
                         }
+                        f.material = cur_mtl;
                         --f.v_index; --f.vt_index; --f.vn_index;
                     
                         cur_obj.f ~= f;
@@ -253,7 +276,7 @@ Obj parse_obj(string data) {
                 
                 break;
             }
-            default: throw new Exception(format("unknown definition \"%s\" at line %d", sline[0], lc));
+            default: throw new Exception(format("unknown definition \"%s\" at line %d.", sline[0], lc));
         }
     }
     
@@ -276,10 +299,20 @@ Mesh load_obj_mesh(Obj obj) {
     return mesh;
 }
 
-Mesh load_obj_mesh(string data) {
-    return load_obj_mesh(parse_obj(data));
+Mesh load_obj_mesh(string data, string mtl_path = "") {
+    Obj obj;
+    return load_obj_mesh(data, obj);
 }
 
-Mesh load_obj_mesh_from_file(string path) {
-    return load_obj_mesh(readText(path));
+Mesh load_obj_mesh(string data, out Obj obj, string mtl_path = "") {
+    obj = parse_obj(data, mtl_path);
+    return load_obj_mesh(obj);
+}
+
+Mesh load_obj_mesh_from_file(string path, string mtl_path = "") {
+    return load_obj_mesh(readText(path), mtl_path);
+}
+
+Mesh load_obj_mesh_from_file(string path, out Obj obj, string mtl_path = "") {
+    return load_obj_mesh(readText(path), obj, mtl_path);
 }

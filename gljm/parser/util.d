@@ -62,7 +62,12 @@ unittest {
     myaa["foo"] -= 12;
     assert(myaa["foo"] == 0);
 }
-import std.stdio;
+
+void updateAA(T1, T2)(ref T1 aa1, T2 aa2) {
+    foreach(key, value; aa2) {
+        aa1[key] = value;
+    }
+}
 
 void[] convert_value_impl(T)(string value) {
     void[] store = new ubyte[8];
