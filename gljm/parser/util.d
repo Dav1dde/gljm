@@ -86,5 +86,6 @@ void[] convert_value(string value, GLenum type) {
         case GL_UNSIGNED_INT: return convert_value_impl!(uint)(value);
         case GL_FLOAT: return convert_value_impl!(float)(value);
         case GL_DOUBLE: return convert_value_impl!(double)(value);
+        default: throw new Exception("unknown GLenum type");
     }
 }

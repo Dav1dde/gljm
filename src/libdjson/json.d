@@ -437,6 +437,8 @@ class JSONString:JSONType {
                 // if the count is even, backslashes cancel and we have the end of the string, otherwise cascade
                 if (bscount%2 == 0) {
                     break;
+                } else {
+                    goto default;
                 }
             default:
                 bscount = 0;

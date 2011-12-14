@@ -180,7 +180,7 @@ Obj parse_obj(string data, string mtl_path = "") {
         string[] sline = split(line);
         
         switch(line[0]) {
-            case '#': continue; break;
+            case '#': continue;
             case 'o': debug { writefln("obj: object-name definitions not implemented (line %d).", lc); } break;
             case 'v': {
                 float[] args = conv_array!(float)(sline[1..$]);
@@ -264,7 +264,7 @@ Obj parse_obj(string data, string mtl_path = "") {
                             case 3:
                                     f.v_index = to!(uint)(s[0]);
                                     if(s[1]) { f.vt_index = to!(uint)(s[1]); }
-                                    f.vn_index = to!(uint)(s[2]);
+                                    f.vn_index = to!(uint)(s[2]); break;
                             default: throw new Exception(format("malformed face definition at line %d.", lc));
                         }
                         f.material = cur_mtl;

@@ -107,7 +107,7 @@ Ply parse_ply(string data) {
                 got_element = true;
                 break;
             }
-            case "end_header": break floop; break;
+            case "end_header": break floop;
             case "property": {
                 if(!got_element) {
                     throw new Exception("no element before property declared");
