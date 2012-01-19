@@ -195,7 +195,7 @@ Obj parse_obj(string data, string mtl_path = "") {
                         break;
                     }
                     case 't': {
-                        cur_obj.v ~= args;
+                        cur_obj.vt ~= args;
                         if(!cur_obj.vt_length) { cur_obj.vt_length = to!(int)(args.length); }
                         else { if(args.length != cur_obj.vt_length) {
                             throw new Exception(format("mismatching number of texture-coordinates at line %d.", lc)); }
