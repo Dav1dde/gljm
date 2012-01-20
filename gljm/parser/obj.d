@@ -262,7 +262,7 @@ Obj parse_obj(string data, string mtl_path = "") {
                                     f.vt_index ~= to!(uint)(s[1])-1; break;
                             case 3:
                                     f.v_index ~= to!(uint)(s[0])-1;
-                                    if(s[1]) { f.vt_index ~= to!(uint)(s[1])-1; }
+                                    if(s[1].length) { f.vt_index ~= to!(uint)(s[1])-1; }
                                     f.vn_index ~= to!(uint)(s[2])-1; break;
                             default: throw new Exception(format("malformed face definition at line %d.", lc));
                         }
@@ -274,6 +274,16 @@ Obj parse_obj(string data, string mtl_path = "") {
                 break;
             }
             default: throw new Exception(format("unknown definition \"%s\" at line %d.", sline[0], lc));
+        }
+    }
+    
+    if(cur_obj.vn.length) {
+        float[][] vn = cur_obj.vn;
+        cur_obj.vn.length = cur_obj.v.length+100;
+        foreach(Face f; cur_obj.f) {
+            for(size_t i=0; i < f.v_index.length; i++){
+                cur_obj.vn[f.v_index[i]] = vn[f.vn_index[i]];
+            }
         }
     }
     
