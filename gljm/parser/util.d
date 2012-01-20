@@ -89,3 +89,15 @@ void[] convert_value(string value, GLenum type) {
         default: throw new Exception("unknown GLenum type");
     }
 }
+
+T[] zip(T)(T[][] R) {
+    T[] res;
+    
+    for(int i=0; i < R[0].length; i++) {
+        foreach(T[] r; R) {
+            res ~= r[i];
+        }
+    }
+    
+    return res;
+}

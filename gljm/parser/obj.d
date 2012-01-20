@@ -1,15 +1,15 @@
 module gljm.parser.obj;
 
 private {
-    import gljm.mesh : Mesh;
+    import gljm.mesh : Mesh, BufInfo;
     import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
-    import gljm.parser.util : quad2triangle, flatten, updateAA, DefaultAA;
+    import gljm.parser.util : quad2triangle, flatten, updateAA, zip;
     import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip, format;
-    import std.array : split, array;
-    import std.algorithm : map;
+    import std.array : split, array, join;
+    import std.algorithm : map, filter;
     import std.conv : to;
     import std.range : chain;
     import std.path : buildPath;
@@ -57,9 +57,9 @@ struct Material {
 }
 
 struct Face {
-    uint v_index;
-    uint vt_index;
-    uint vn_index;
+    uint[] v_index;
+    uint[] vt_index;
+    uint[] vn_index;
     Material material;
 }
 
@@ -253,25 +253,23 @@ Obj parse_obj(string data, string mtl_path = "") {
                 }
                 
                 foreach(string[] tri; tris) {
+                    Face f;
                     foreach(string arg; tri) {
-                        Face f;
                         string[] s = split(arg, "/");
 
                         switch(s.length) {
-                            case 1: f.v_index = to!(uint)(s[0]); break;
-                            case 2: f.v_index = to!(uint)(s[0]);
-                                    f.vt_index = to!(uint)(s[1]); break;
+                            case 1: f.v_index ~= to!(uint)(s[0])-1; break;
+                            case 2: f.v_index ~= to!(uint)(s[0])-1;
+                                    f.vt_index ~= to!(uint)(s[1])-1; break;
                             case 3:
-                                    f.v_index = to!(uint)(s[0]);
-                                    if(s[1]) { f.vt_index = to!(uint)(s[1]); }
-                                    f.vn_index = to!(uint)(s[2]); break;
+                                    f.v_index ~= to!(uint)(s[0])-1;
+                                    if(s[1]) { f.vt_index ~= to!(uint)(s[1])-1; }
+                                    f.vn_index ~= to!(uint)(s[2])-1; break;
                             default: throw new Exception(format("malformed face definition at line %d.", lc));
                         }
-                        f.material = cur_mtl;
-                        --f.v_index; --f.vt_index; --f.vn_index;
-                    
-                        cur_obj.f ~= f;
                     }
+                    f.material = cur_mtl;
+                    cur_obj.f ~= f;
                 }
                 
                 break;
@@ -290,11 +288,27 @@ Obj parse_obj_from_file(string path) {
 Mesh load_obj_mesh(Obj obj) {
     Mesh mesh;
     
-    mesh.indices = ElementBuffer(array(map!("a.v_index")(obj.f)), GL_UNSIGNED_INT);
+    mesh.indices = ElementBuffer(join(map!("chain(a.v_index, a.vt_index, a.vn_index)")(obj.f)), GL_UNSIGNED_INT);
     
-    mesh.buffer.set("position", Buffer(flatten(obj.v), GL_FLOAT, obj.v_length));
-    if(obj.vt) mesh.buffer.set("textcoord", Buffer(flatten(obj.vt), GL_FLOAT, obj.vt_length));
-    if(obj.vn) mesh.buffer.set("normal", Buffer(flatten(obj.vn), GL_FLOAT, obj.vn_length));
+    int cur_off = 0;
+    BufInfo[string] s = ["position" : BufInfo(obj.v_length, cur_off)];
+    cur_off += obj.v_length*float.sizeof;
+    
+    int stride = (obj.v_length+obj.vt_length+obj.vn_length)*float.sizeof;
+        
+    float[][][] d = [obj.v];
+    
+    if(obj.vt) {
+        s["texcoord"] = BufInfo(obj.vt_length, cur_off);
+        cur_off += obj.vt_length*float.sizeof;
+        d ~= obj.vt;
+    } if(obj.vn) {
+        s["normal"] = BufInfo(obj.vn_length, cur_off);
+        cur_off += obj.vn_length*float.sizeof;
+        d ~= obj.vn;
+    }
+    
+    mesh.buffer.set(s, Buffer(flatten(zip(d)), GL_FLOAT, 3, stride));
     
     return mesh;
 }

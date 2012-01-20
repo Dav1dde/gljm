@@ -4,8 +4,9 @@ private {
     import derelict.opengl.gl : GLint, GLsizei, GLuint, GLenum,
                                 glDrawElements, glDrawArrays,
                                 GL_TRIANGLES, GL_UNSIGNED_SHORT;
+    import std.typecons : Tuple;
     import gljm.util : glenum2size;
-    import gljm.vbo : Buffer, ElementBuffer, BufferData;
+    import gljm.vbo : Buffer, ElementBuffer;
     import std.conv;
     
     debug {
@@ -13,56 +14,50 @@ private {
     }
 }
 
+alias Tuple!(int, "size", int, "offset") BufInfo;
 
 struct Mesh {
     struct BufferS {
-        private Buffer[string] _members;
+        alias Tuple!(BufInfo[string], Buffer) SBuf;
+        private SBuf[] members;
         private int count = 0;
-        alias _members this;
     
-        Buffer opDispatch(string s)() { return get(s); }
-        Buffer get(string s) { return _members[s]; }
-        /*package*/ void set(string s, Buffer b) {
-            _members[s] = b;
+        void set(string s, Buffer b) {
+            set([s : BufInfo(b.size, 0)], b);
+        }
+        void set(BufInfo[string] s, Buffer b) {
+            members ~= SBuf(s, b);
             
-            if(!count) {
-                count = (to!(int)(b.data.length) / glenum2size(b.type)) / b.size;
+            if(count == 0) {
+                int size = 0;
+                foreach(BufInfo bi; s.values) {
+                    size += bi.size;
+                }
+                
+                if(size) {
+                    count = (to!(int)(b.data.length) / glenum2size(b.type)) / size;
+                }
             }
         }
 
         void bind(GLuint[string] attrib_locations) {
-            foreach(string key, Buffer value; _members) {
-                if(key in attrib_locations) {
-                    value.bind(attrib_locations[key]);
-                }
-                
-                debug {
-                    if(key !in attrib_locations) {
-                        writefln("bind buffer: no matching buffer for key \"" ~ key ~ "\"."); 
+            foreach(SBuf s; members) {
+                Buffer buf = s[1];
+                foreach(string loc, BufInfo bi; s[0]) {
+                    if(loc in attrib_locations) {
+                        buf.bind(attrib_locations[loc], bi.size, bi.offset);
+                    } else {                                     
+                        debug { writefln("bind buffer: no matching buffer for key \"" ~ loc ~ "\"."); }
                     }
                 }
             }
         }
         
         void unbind() {
-            foreach(string key, Buffer value; _members) {
-                value.unbind();
+            foreach(SBuf s; members) {
+                s[1].unbind();
             }
         }
-        void unbind(GLuint[string] attrib_locations) {
-            foreach(string key, Buffer value; _members) {
-                if(key in attrib_locations) {
-                    value.unbind(attrib_locations[key]);
-                }
-                
-                debug {
-                    if(key !in attrib_locations) {
-                        writefln("unbind buffer: no matching buffer for key \"" ~ key ~ "\"."); 
-                    }
-                }
-            }
-        }
-        
     }
     
     ElementBuffer indices;
@@ -79,12 +74,13 @@ struct Mesh {
         int c = count_ < 0 ? count:count_;
         if(indices) {
             indices.bind();
-
+            
             glDrawElements(mode, c, indices.type, cast(void *)(offset));
+
             indices.unbind();
         } else {
             glDrawArrays(mode, offset, c);
         }
-        buffer.unbind(attrib_locations);
+        buffer.unbind();
     }
 }

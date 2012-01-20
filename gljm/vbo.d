@@ -1,29 +1,28 @@
 module gljm.vbo;
 
 private {
-    import derelict.opengl.gl : GLenum, GLint, GLuint, GL_FALSE, glDisableVertexAttribArray,
+    import derelict.opengl.gl : GLenum, GLint, GLsizei, GLuint, GL_FALSE, glDisableVertexAttribArray,
                                 glEnableVertexAttribArray, glVertexAttribPointer, 
                                 GL_STATIC_DRAW, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER,
                                 glBindBuffer, glBufferData, glGenBuffers;
 }
 
-struct BufferData {
+mixin template BufferData() {
     void[] data;
     GLenum type;
     GLint size;
     GLenum hint;
-    
-    this(void[] data_, GLenum type_, GLint size_, GLenum hint_ = GL_STATIC_DRAW) {
-        data = data_;
-        type = type_;
-        size = size_;
-        hint = hint_;
+
+    private void set_buffer_data(void[] d, GLenum t, GLenum h) {
+        data = d;
+        type = t;
+        hint = h;
     }
 }
 
 struct ElementBuffer {
-    BufferData _buffer_data;
-    alias _buffer_data this;
+    mixin BufferData;
+    
     GLuint buffer;
     
     //@disable this();
@@ -42,58 +41,49 @@ struct ElementBuffer {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //or unbind()
         
-        _buffer_data.data = data;
-        _buffer_data.hint = hint;
-        _buffer_data.type = type;
+        set_buffer_data(data, type, hint);
     }
 
-    @property void buffer_data(BufferData bd) { set_data(bd.data, bd.hint); }
-    @property BufferData buffer_data() { return _buffer_data; };
-
-    bool opCast(T : bool)() { return cast(bool)(_buffer_data.data.length); }
+    bool opCast(T : bool)() { return cast(bool)(data.length); }
 }
 
 
 struct Buffer {
-    BufferData _buffer_data;
-    alias _buffer_data this;
+    mixin BufferData;
+    
+    GLsizei stride;
+    
     GLuint buffer;
     
     //@disable this();
     static Buffer opCall() { return Buffer(0); }
     private this(ubyte x) { glGenBuffers(1, &buffer); }
-    this(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
+    this(void[] data, GLenum type, GLint size_=4, GLsizei stride_=0, GLenum hint = GL_STATIC_DRAW) {
         glGenBuffers(1, &buffer);
-        set_data(data, type, size, hint);
+        stride = stride_;
+        size = size_;
+        set_data(data, type, hint);
     }
     
     void bind() { glBindBuffer(GL_ARRAY_BUFFER, buffer); }
-    void bind(GLuint attrib_location) {
+    void bind(GLuint attrib_location, GLint size_=-1, GLsizei offset=0, GLsizei stride_=-1) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        int s = stride_ >= 0 ? stride_:stride;
+        GLint si = size_ >= 1 ? size_:size;
         glEnableVertexAttribArray(attrib_location);
-        glVertexAttribPointer(attrib_location, _buffer_data.size, _buffer_data.type, GL_FALSE, 0, null);
+        glVertexAttribPointer(attrib_location, si, type, GL_FALSE, s, cast(void *)offset);
     }
     void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
-    void unbind(GLuint attrib_location) {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glDisableVertexAttribArray(attrib_location);
-    }
     
-    void set_data(void[] data, GLenum type, GLint size, GLenum hint = GL_STATIC_DRAW) {
+    void set_data(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()
         glBufferData(GL_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
     
-        _buffer_data.data = data;
-        _buffer_data.type = type;
-        _buffer_data.size = size;
-        _buffer_data.hint = hint;
+        set_buffer_data(data, type, hint);
     }
     
-    @property void buffer_data(BufferData bd) { set_data(bd.data, bd.type, bd.size, bd.hint); }
-    @property BufferData buffer_data() { return _buffer_data; }
-    
-    bool opCast(T : bool)() { return cast(bool)(_buffer_data.data.length); }
+    bool opCast(T : bool)() { return cast(bool)(data.length); }
 }
 
 

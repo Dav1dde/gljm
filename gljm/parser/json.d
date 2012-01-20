@@ -2,7 +2,7 @@ module gljm.parser.json;
 
 private {
     import gljm.mesh : Mesh;
-    import gljm.vbo : ElementBuffer, Buffer, BufferData;
+    import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
     import libdjson.json : JSONType, JSONObject, readJSON;
     import derelict.opengl.gl : GLint, GL_FLOAT, GL_UNSIGNED_SHORT, GL_INT;
@@ -52,17 +52,14 @@ Mesh load_json_mesh(JSONObject jobj) {
                 }
             }
             
-            BufferData buffer_data;
+            Buffer buffer = Buffer();
             switch(ctype) {
-                case 'f': buffer_data = BufferData(conv_array!(float)(data), GL_FLOAT, size); break;
-                case 's': buffer_data = BufferData(conv_array!(ushort)(data), GL_UNSIGNED_SHORT, size); break;
-                case 'i': buffer_data = BufferData(conv_array!(int)(data), GL_INT, size); break;
+                case 'f': buffer.set_data(conv_array!(float)(data), GL_FLOAT, size); break;
+                case 's': buffer.set_data(conv_array!(ushort)(data), GL_UNSIGNED_SHORT, size); break;
+                case 'i': buffer.set_data(conv_array!(int)(data), GL_INT, size); break;
                 default: throw new Exception("key \"" ~ key ~ "\" has unknown type \"" ~ ctype ~ "\", "
                                              "only f, s and i are supported.");
             }
-            
-            Buffer buffer = Buffer();
-            buffer.buffer_data = buffer_data;
                         
             m.buffer.set(name, buffer);
         } else {
