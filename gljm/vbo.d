@@ -26,15 +26,26 @@ struct ElementBuffer {
     GLuint buffer;
     
     //@disable this();
-    static ElementBuffer opCall() { return ElementBuffer(0); }
-    private this(ubyte x) { glGenBuffers(1, &buffer); }
+    static ElementBuffer opCall() {
+        return ElementBuffer(0);
+    }
+    
+    private this(ubyte x) {
+        glGenBuffers(1, &buffer);
+    }
+    
     this(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glGenBuffers(1, &buffer);
         set_data(data, type, hint);
     }
     
-    void bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); }
-    void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+    void bind() {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+    }
+    
+    void unbind() {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
     
     void set_data(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer); // or bind()
@@ -44,7 +55,9 @@ struct ElementBuffer {
         set_buffer_data(data, type, hint);
     }
 
-    bool opCast(T : bool)() { return cast(bool)(data.length); }
+    bool opCast(T : bool)() {
+        return cast(bool)(data.length);
+    }
 }
 
 
@@ -56,8 +69,14 @@ struct Buffer {
     GLuint buffer;
     
     //@disable this();
-    static Buffer opCall() { return Buffer(0); }
-    private this(ubyte x) { glGenBuffers(1, &buffer); }
+    static Buffer opCall() {
+        return Buffer(0);
+    }
+    
+    private this(ubyte x) {
+        glGenBuffers(1, &buffer);
+    }
+    
     this(void[] data, GLenum type, GLint size_=4, GLsizei stride_=0, GLenum hint = GL_STATIC_DRAW) {
         glGenBuffers(1, &buffer);
         stride = stride_;
@@ -65,7 +84,10 @@ struct Buffer {
         set_data(data, type, hint);
     }
     
-    void bind() { glBindBuffer(GL_ARRAY_BUFFER, buffer); }
+    void bind() {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    }
+    
     void bind(GLuint attrib_location, GLint size_=-1, GLsizei offset=0, GLsizei stride_=-1) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         int s = stride_ >= 0 ? stride_:stride;
@@ -73,7 +95,10 @@ struct Buffer {
         glEnableVertexAttribArray(attrib_location);
         glVertexAttribPointer(attrib_location, si, type, GL_FALSE, s, cast(void *)offset);
     }
-    void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+    
+    void unbind() {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
     
     void set_data(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer); // or bind()
@@ -83,7 +108,9 @@ struct Buffer {
         set_buffer_data(data, type, hint);
     }
     
-    bool opCast(T : bool)() { return cast(bool)(data.length); }
+    bool opCast(T : bool)() {
+        return cast(bool)(data.length);
+    }
 }
 
 

@@ -8,10 +8,9 @@ private {
     import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip, format;
-    import std.array : split, array, join;
-    import std.algorithm : map, filter;
+    import std.array : split, join;
+    import std.algorithm : map;
     import std.conv : to;
-    import std.range : chain;
     import std.path : buildPath;
     
     debug {
