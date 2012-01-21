@@ -277,17 +277,27 @@ Obj parse_obj(string data, string mtl_path = "") {
         }
     }
     
-    if(cur_obj.vn.length) {
-        float[][] vn = cur_obj.vn;
-        cur_obj.vn.length = cur_obj.v.length+100;
-        foreach(Face f; cur_obj.f) {
-            for(size_t i=0; i < f.v_index.length; i++){
-                cur_obj.vn[f.v_index[i]] = vn[f.vn_index[i]];
-            }
+    return cur_obj;
+}
+
+// eliminate faces
+Obj convert_faces(Obj obj) {
+    Obj reobj;
+    
+    reobj.v_length = obj.v_length;
+    reobj.vt_length = obj.vt_length;
+    reobj.vn_length = obj.vn_length;
+    reobj.materials = obj.materials;
+    
+    foreach(Face f; obj.f) {
+        for(size_t i=0; i < obj.f_length; i++) {
+            reobj.v ~= obj.v[f.v_index[i]];
+            if(f.vt_index) reobj.vt ~= obj.vt[f.vt_index[i]];
+            if(f.vn_index) reobj.vn ~= obj.vn[f.vn_index[i]];
         }
     }
     
-    return cur_obj;
+    return reobj;
 }
 
 Obj parse_obj_from_file(string path) {
@@ -297,27 +307,34 @@ Obj parse_obj_from_file(string path) {
 Mesh load_obj_mesh(Obj obj) {
     Mesh mesh;
     
-    mesh.indices = ElementBuffer(join(map!("chain(a.v_index, a.vt_index, a.vn_index)")(obj.f)), GL_UNSIGNED_INT);
+    if(obj.vt_length || obj.vn_length) {
+        obj = convert_faces(obj); // this is needed for correct texture coordinates and normals
+    }
+    
+    uint[] indices = join(map!("a.v_index")(obj.f));
+    if(indices.length) {
+        mesh.indices = ElementBuffer(indices, GL_UNSIGNED_INT);
+    }
     
     int cur_off = 0;
     BufInfo[string] s = ["position" : BufInfo(obj.v_length, cur_off)];
     cur_off += obj.v_length*float.sizeof;
     
     int stride = (obj.v_length+obj.vt_length+obj.vn_length)*float.sizeof;
-        
+    
     float[][][] d = [obj.v];
     
-    if(obj.vt) {
+    if(obj.vt.length) {
         s["texcoord"] = BufInfo(obj.vt_length, cur_off);
         cur_off += obj.vt_length*float.sizeof;
         d ~= obj.vt;
-    } if(obj.vn) {
+    } if(obj.vn.length) {
         s["normal"] = BufInfo(obj.vn_length, cur_off);
         cur_off += obj.vn_length*float.sizeof;
         d ~= obj.vn;
     }
-    
-    mesh.buffer.set(s, Buffer(flatten(zip(d)), GL_FLOAT, 3, stride));
+
+    mesh.buffer.set(s, Buffer(join(zip(d)), GL_FLOAT, 3, stride));
     
     return mesh;
 }
