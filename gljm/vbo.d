@@ -114,7 +114,7 @@ struct Buffer {
         glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
-        data = data_;
+        data[offset..data_.length] = data_;
     }
     
     bool opCast(T : bool)() {
