@@ -26,6 +26,7 @@ struct ElementBuffer {
     mixin BufferData;
     
     GLuint buffer;
+    alias buffer this;
     
     //@disable this();
     static ElementBuffer opCall() {
@@ -73,6 +74,7 @@ struct Buffer {
     GLsizei stride;
     
     GLuint buffer;
+    alias buffer this;
     
     //@disable this();
     static Buffer opCall() {
