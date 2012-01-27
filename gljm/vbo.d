@@ -42,7 +42,7 @@ struct ElementBuffer {
         set_data(data, type, hint);
     }
     
-    ~this() {
+    void remove() {
         glDeleteBuffers(1, &buffer);
     }
     
@@ -92,7 +92,7 @@ struct Buffer {
         set_data(data, type, hint);
     }
     
-    ~this() {
+    void remove() {
         glDeleteBuffers(1, &buffer);
     }
     
