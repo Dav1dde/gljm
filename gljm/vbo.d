@@ -5,7 +5,8 @@ private {
                                 GL_FALSE, glDisableVertexAttribArray, 
                                 glEnableVertexAttribArray, glVertexAttribPointer, 
                                 GL_STATIC_DRAW, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER,
-                                glBindBuffer, glBufferData, glBufferSubData, glGenBuffers;
+                                glBindBuffer, glBufferData, glBufferSubData,
+                                glGenBuffers, glDeleteBuffers;
 }
 
 mixin template BufferData() {
@@ -38,6 +39,10 @@ struct ElementBuffer {
     this(void[] data, GLenum type, GLenum hint = GL_STATIC_DRAW) {
         glGenBuffers(1, &buffer);
         set_data(data, type, hint);
+    }
+    
+    ~this() {
+        glDeleteBuffers(1, &buffer);
     }
     
     void bind() {
@@ -83,6 +88,10 @@ struct Buffer {
         stride = stride_;
         size = size_;
         set_data(data, type, hint);
+    }
+    
+    ~this() {
+        glDeleteBuffers(1, &buffer);
     }
     
     void bind() {
