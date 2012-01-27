@@ -4,7 +4,7 @@ private {
     import gljm.mesh : Mesh, BufInfo;
     import gljm.vbo : ElementBuffer, Buffer;
     import gljm.util : conv_array;
-    import gljm.parser.util : quad2triangle, flatten, updateAA, zip;
+    import gljm.parser.util : quad2triangle, updateAA, zip;
     import derelict.opengl.gl : GL_UNSIGNED_INT, GL_FLOAT;
     import std.file : readText;
     import std.string : splitlines, strip, format;

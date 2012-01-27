@@ -1,10 +1,11 @@
 module gljm.vbo;
 
 private {
-    import derelict.opengl.gl : GLenum, GLint, GLsizei, GLuint, GL_FALSE, glDisableVertexAttribArray,
+    import derelict.opengl.gl : GLenum, GLint, GLsizei, GLuint, GLintptr, 
+                                GL_FALSE, glDisableVertexAttribArray, 
                                 glEnableVertexAttribArray, glVertexAttribPointer, 
                                 GL_STATIC_DRAW, GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER,
-                                glBindBuffer, glBufferData, glGenBuffers;
+                                glBindBuffer, glBufferData, glBufferSubData, glGenBuffers;
 }
 
 mixin template BufferData() {
@@ -106,6 +107,14 @@ struct Buffer {
         glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
     
         set_buffer_data(data, type, hint);
+    }
+    
+    void update(void[] data_, GLintptr offset) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        data = data_;
     }
     
     bool opCast(T : bool)() {
