@@ -10,13 +10,12 @@ private {
 }
 
 mixin template BufferData() {
-    void[] data;
     GLenum type;
     GLint size;
     GLenum hint;
+    size_t length = 0;
 
-    private void set_buffer_data(void[] d, GLenum t, GLenum h) {
-        data = d;
+    private void set_buffer_data(GLenum t, GLenum h) {
         type = t;
         hint = h;
     }
@@ -59,11 +58,12 @@ struct ElementBuffer {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //or unbind()
         
-        set_buffer_data(data, type, hint);
+        length = data.length;
+        set_buffer_data(type, hint);
     }
 
     bool opCast(T : bool)() {
-        return cast(bool)(data.length);
+        return cast(bool)(length);
     }
 }
 
@@ -117,19 +117,18 @@ struct Buffer {
         glBufferData(GL_ARRAY_BUFFER, data.length, data.ptr, hint);
         glBindBuffer(GL_ARRAY_BUFFER, 0); //or unbind()
     
-        set_buffer_data(data, type, hint);
+        length = data.length;
+        set_buffer_data(type, hint);
     }
     
-    void update(void[] data_, GLintptr offset) {
+    void update(void[] data, GLintptr offset) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
         glBufferSubData(GL_ARRAY_BUFFER, offset, data.length, data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        
-        data[offset..data_.length] = data_;
     }
     
     bool opCast(T : bool)() {
-        return cast(bool)(data.length);
+        return cast(bool)(length);
     }
 }
 
